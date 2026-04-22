@@ -2,7 +2,7 @@ package com.example.football_team_frontend.repository
 
 import com.example.football_team_frontend.interfaces.RetrofitClient
 import com.example.football_team_frontend.model.Partido
-import com.example.football_team_frontend.model.ResultadoPartidoDTO
+import com.example.football_team_frontend.model.ResultadoPartido
 
 class PartidoRepository {
 
@@ -34,7 +34,7 @@ class PartidoRepository {
     }
 
     // Equivale a: findResultadosConNombresEquipos
-    suspend fun obtenerResultados(): List<ResultadoPartidoDTO> {
+    suspend fun obtenerResultados(): List<ResultadoPartido> {
         return api.obtenerResultados()
     }
 }

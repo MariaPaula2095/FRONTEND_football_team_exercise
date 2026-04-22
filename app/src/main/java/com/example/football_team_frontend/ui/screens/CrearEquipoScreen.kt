@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.football_team_frontend.ui.theme.Blanco
 import com.example.football_team_frontend.ui.theme.CardColor
@@ -44,6 +45,7 @@ import com.example.football_team_frontend.ui.theme.Verde
 import com.example.football_team_frontend.ui.theme.VerdeOscuro
 
 @Composable
+
 fun CrearEquipoScreen(
     modifier: Modifier = Modifier,
     nombre: String,
@@ -249,5 +251,22 @@ private fun FormField(
             focusedLabelColor = Verde,
             unfocusedLabelColor = GrisClaro
         )
+    )
+}
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CrearEquipoScreenPreview() {
+
+    CrearEquipoScreen(
+        nombre = "Barcelona FC",
+        ciudad = "Barcelona",
+        fundacion = "1899",
+
+        onNombreChange = {},
+        onCiudadChange = {},
+        onFundacionChange = {},
+
+        onBackClick = {},
+        onGuardarClick = {}
     )
 }

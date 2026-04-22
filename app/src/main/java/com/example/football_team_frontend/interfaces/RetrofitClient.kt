@@ -10,7 +10,7 @@ Configura Retrofit
 Genera la instancia (entrenadorApi) para llamar a la API
  */
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.18.17:8080/"
+    private const val BASE_URL = "http://192.168.10.43:8080/"
 
     //API DE ENTRENADOR
     val entrenadorApi: EntrenadorApi by lazy {

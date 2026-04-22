@@ -1,7 +1,7 @@
 package com.example.football_team_frontend.interfaces
 
 import com.example.football_team_frontend.model.Partido
-import com.example.football_team_frontend.model.ResultadoPartidoDTO
+import com.example.football_team_frontend.model.ResultadoPartido
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -36,5 +36,5 @@ interface PartidoApi {
     ): Int
 
     @GET("/api/partidos/resultados")
-    suspend fun obtenerResultados(): List<ResultadoPartidoDTO>
+    suspend fun obtenerResultados(): List<ResultadoPartido>
 }

@@ -6,27 +6,35 @@ import com.example.football_team_frontend.model.ResultadoPartidoDTO
 
 class PartidoRepository {
 
-    suspend fun obtenerPartidos(): List<Partido> {
-        return RetrofitClient.partidoApi.obtenerPartidos()
+    private val api = RetrofitClient.partidoApi
+
+    // ================= CRUD =================
+
+    suspend fun listar(): List<Partido> {
+        return api.listar()
     }
 
-    suspend fun guardarPartido(partido: Partido): Partido {
-        return RetrofitClient.partidoApi.guardarPartido(partido)
+    suspend fun guardar(partido: Partido): Partido {
+        return api.guardar(partido)
     }
 
-    suspend fun eliminarPartido(id: Long) {
-        RetrofitClient.partidoApi.eliminarPartido(id)
+    suspend fun actualizar(id: Long, partido: Partido): Partido {
+        return api.actualizar(id, partido)
     }
 
-    suspend fun actualizarPartido(id: Long, partido: Partido): Partido {
-        return RetrofitClient.partidoApi.actualizarPartido(id, partido)
+    suspend fun eliminar(id: Long) {
+        api.eliminar(id)
     }
 
-    suspend fun obtenerTotalGolesEquipo(equipoId: Int): Int {
-        return RetrofitClient.partidoApi.obtenerTotalGolesEquipo(equipoId)
+    // ================= CONSULTAS NATIVAS =================
+
+    // Equivale a: findTotalGolesByEquipoId
+    suspend fun totalGolesPorEquipo(equipoId: Long): Int {
+        return api.totalGolesPorEquipo(equipoId)
     }
 
+    // Equivale a: findResultadosConNombresEquipos
     suspend fun obtenerResultados(): List<ResultadoPartidoDTO> {
-        return RetrofitClient.partidoApi.obtenerResultados()
+        return api.obtenerResultados()
     }
 }

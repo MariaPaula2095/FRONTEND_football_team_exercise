@@ -2,14 +2,14 @@ package com.example.football_team_frontend.model
 
 import java.util.Date
 
-data class Partido (
-    val idPartido: Long=0,
-    val fecha: Date,
-    val estadio: String,
-    val equipoLocal: Equipo,
-    val equipoVisita: Equipo,
-    val golesLocal: Int,
-    val golesVisita: Int,
+data class Partido(
+    val idPartido: Long? = null,
+    val fecha: String = "",      // "YYYY-MM-DD"
+    val estadio: String = "",
+    val idEquipoLocal: Long? = null,
+    val idEquipoVisita: Long? = null,
+    val golesLocal: Int = 0,
+    val golesVisita: Int = 0
 )
 
 /*

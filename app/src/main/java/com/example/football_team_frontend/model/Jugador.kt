@@ -2,12 +2,15 @@ package com.example.football_team_frontend.model
 
 import java.util.Date
 
-data class Jugador (
-    val idJugador: Long=0,
-    val nombre: String,
-    val posicion: String,
-    val dorsal: Int,
-    val fechaNac: Date
+
+data class Jugador(
+    val idJugador: Long? = null,
+    val nombre: String = "",
+    val posicion: String = "",
+    val dorsal: Int = 0,
+    val fechaNac: String = "",   // "YYYY-MM-DD"
+    val nacionalidad: String = "",
+    val idEquipo: Long? = null   // ← DTO usa idEquipo, no objeto Equipo
 )
 /*
     ATRIBUTOS EN BACKEND
@@ -17,4 +20,5 @@ data class Jugador (
     private Integer dorsal;
     private LocalDate fechaNac;
     private String nacionalidad;
+    private Long idEquipo;
  */

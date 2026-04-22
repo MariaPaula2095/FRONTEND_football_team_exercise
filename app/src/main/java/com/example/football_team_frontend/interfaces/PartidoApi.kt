@@ -11,23 +11,29 @@ import retrofit2.http.Path
 
 interface PartidoApi {
 
+    // ================= CRUD =================
+
     @GET("/api/partidos/listar")
-    suspend fun obtenerPartidos(): List<Partido>
+    suspend fun listar(): List<Partido>
 
     @POST("/api/partidos/guardar")
-    suspend fun guardarPartido(@Body partido: Partido): Partido
-
-    @DELETE("/api/partidos/eliminar/{id}")
-    suspend fun eliminarPartido(@Path("id") id: Long)
+    suspend fun guardar(@Body partido: Partido): Partido
 
     @PUT("/api/partidos/actualizar/{id}")
-    suspend fun actualizarPartido(
+    suspend fun actualizar(
         @Path("id") id: Long,
         @Body partido: Partido
     ): Partido
 
-    @GET("/api/partidos/total-goles/{equipoId}")
-    suspend fun obtenerTotalGolesEquipo(@Path("equipoId") equipoId: Int): Int
+    @DELETE("/api/partidos/eliminar/{id}")
+    suspend fun eliminar(@Path("id") id: Long)
+
+    // ================= CONSULTAS NATIVAS =================
+
+    @GET("/api/partidos/total-goles-Por/{equipoId}")
+    suspend fun totalGolesPorEquipo(
+        @Path("equipoId") equipoId: Long
+    ): Int
 
     @GET("/api/partidos/resultados")
     suspend fun obtenerResultados(): List<ResultadoPartidoDTO>

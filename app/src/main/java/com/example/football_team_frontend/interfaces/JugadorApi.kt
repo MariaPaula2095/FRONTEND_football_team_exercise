@@ -10,24 +10,32 @@ import retrofit2.http.Query
 
 interface JugadorApi {
 
+    // ================= CRUD =================
+
     @GET("/api/jugadores/listar")
-    suspend fun obtenerJugadores(): List<Jugador>
+    suspend fun listar(): List<Jugador>
 
     @POST("/api/jugadores/guardar")
-    suspend fun guardarJugador(@Body jugador: Jugador): Jugador
-
-    @DELETE("/api/jugadores/eliminar/{id}")
-    suspend fun eliminarJugador(@Path("id") id: Long)
+    suspend fun guardar(@Body jugador: Jugador): Jugador
 
     @PUT("/api/jugadores/actualizar/{id}")
-    suspend fun actualizarJugador(
+    suspend fun actualizar(
         @Path("id") id: Long,
         @Body jugador: Jugador
     ): Jugador
 
+    @DELETE("/api/jugadores/eliminar/{id}")
+    suspend fun eliminar(@Path("id") id: Long)
+
+    // ================= CONSULTAS NATIVAS =================
+
     @GET("/api/jugadores/equipo/{equipoId}")
-    suspend fun obtenerJugadoresPorEquipo(@Path("equipoId") equipoId: Int): List<Jugador>
+    suspend fun jugadoresPorEquipo(
+        @Path("equipoId") equipoId: Long
+    ): List<Jugador>
 
     @GET("/api/jugadores/goles-mayores")
-    suspend fun obtenerJugadoresConGolesMayores(@Query("minGoles") minGoles: Int): List<Jugador>
+    suspend fun jugadoresConMasGoles(
+        @Query("minGoles") minGoles: Int
+    ): List<Jugador>
 }

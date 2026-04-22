@@ -5,27 +5,37 @@ import com.example.football_team_frontend.model.Jugador
 
 class JugadorRepository {
 
-    suspend fun obtenerJugadores(): List<Jugador> {
-        return RetrofitClient.jugadorApi.obtenerJugadores()
+    private val api = RetrofitClient.jugadorApi
+
+    // ================= CRUD =================
+
+    suspend fun listar(): List<Jugador> {
+        return api.listar()
     }
 
-    suspend fun guardarJugador(jugador: Jugador): Jugador {
-        return RetrofitClient.jugadorApi.guardarJugador(jugador)
+    suspend fun guardar(jugador: Jugador): Jugador {
+        return api.guardar(jugador)
     }
 
-    suspend fun eliminarJugador(id: Long) {
-        RetrofitClient.jugadorApi.eliminarJugador(id)
+    suspend fun actualizar(id: Long, jugador: Jugador): Jugador {
+        return api.actualizar(id, jugador)
     }
 
-    suspend fun actualizarJugador(id: Long, jugador: Jugador): Jugador {
-        return RetrofitClient.jugadorApi.actualizarJugador(id, jugador)
+    suspend fun eliminar(id: Long) {
+        api.eliminar(id)
     }
 
-    suspend fun obtenerJugadoresPorEquipo(equipoId: Int): List<Jugador> {
-        return RetrofitClient.jugadorApi.obtenerJugadoresPorEquipo(equipoId)
+    // ================= CONSULTAS NATIVAS =================
+
+    // Equivale a: findJugadoresByEquipoId
+
+    suspend fun jugadoresPorEquipo(equipoId: Long): List<Jugador> {
+        return api.jugadoresPorEquipo(equipoId)
     }
 
-    suspend fun obtenerJugadoresConGolesMayores(minGoles: Int): List<Jugador> {
-        return RetrofitClient.jugadorApi.obtenerJugadoresConGolesMayores(minGoles)
+    // Equivale a: findJugadoresConGolesMayoresA
+
+    suspend fun jugadoresConMasGoles(minGoles: Int): List<Jugador> {
+        return api.jugadoresConMasGoles(minGoles)
     }
 }

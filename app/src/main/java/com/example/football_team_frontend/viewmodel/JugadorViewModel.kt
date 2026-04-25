@@ -29,6 +29,9 @@ class JugadorViewModel : ViewModel() {
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando
 
+    private val _guardadoExitoso = MutableStateFlow(false)
+    val guardadoExitoso: StateFlow<Boolean> = _guardadoExitoso
+
     // ================= CRUD =================
 
     fun listar() {
@@ -37,7 +40,8 @@ class JugadorViewModel : ViewModel() {
             try {
                 _jugadores.value = repository.listar()
             } catch (e: Exception) {
-                _mensaje.value = "Error al listar: ${e.message}"
+                _mensaje.value = "Error de conexión: Verifica tu internet o el estado del servidor."
+                println("DEBUG: ${e.localizedMessage}")
             } finally {
                 _cargando.value = false
             }
@@ -47,10 +51,12 @@ class JugadorViewModel : ViewModel() {
     fun guardar(jugador: Jugador) {
         viewModelScope.launch {
             _cargando.value = true
+            _guardadoExitoso.value = false
             try {
                 repository.guardar(jugador)
                 _mensaje.value = "Jugador guardado correctamente"
                 listar() // refresca lista
+                _guardadoExitoso.value = true
             } catch (e: Exception) {
                 _mensaje.value = "Error al guardar: ${e.message}"
             } finally {
@@ -62,10 +68,12 @@ class JugadorViewModel : ViewModel() {
     fun actualizar(id: Long, jugador: Jugador) {
         viewModelScope.launch {
             _cargando.value = true
+            _guardadoExitoso.value = false
             try {
                 repository.actualizar(id, jugador)
                 _mensaje.value = "Jugador actualizado correctamente"
                 listar()
+                _guardadoExitoso.value = true
             } catch (e: Exception) {
                 _mensaje.value = "Error al actualizar: ${e.message}"
             } finally {
@@ -119,5 +127,9 @@ class JugadorViewModel : ViewModel() {
 
     fun limpiarMensaje() {
         _mensaje.value = null
+    }
+
+    fun resetGuardado() {
+        _guardadoExitoso.value = false
     }
 }

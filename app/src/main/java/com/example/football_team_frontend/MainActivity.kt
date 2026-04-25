@@ -21,6 +21,8 @@ import com.example.football_team_frontend.ui.screens.*
 import com.example.football_team_frontend.ui.theme.FootballTheme
 import com.example.football_team_frontend.viewmodel.EquipoViewModel
 import com.example.football_team_frontend.viewmodel.JugadorViewModel
+import com.example.football_team_frontend.viewmodel.PartidoViewModel
+import com.example.football_team_frontend.viewmodel.EntrenadorViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     val jugadorViewModel: JugadorViewModel = viewModel()
                     val equipoViewModel: EquipoViewModel = viewModel()
+                    val partidoViewModel: PartidoViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -45,7 +48,114 @@ class MainActivity : ComponentActivity() {
                         composable("inicio") {
                             InicioScreen(
                                 onEquiposClick = { navController.navigate("equipos") },
-                                onJugadoresClick = { navController.navigate("jugadores") }
+                                onJugadoresClick = { navController.navigate("jugadores") },
+                                onPartidosClick = { navController.navigate("partidos") },
+                                onEntrenadoresClick = { /* Próximamente */ },
+                                onEstadisticasClick = { /* Próximamente */ }
+                            )
+                        }
+
+                        composable("partidos") {
+                            val resultados by partidoViewModel.resultados.collectAsState()
+                            val jugadores by jugadorViewModel.jugadores.collectAsState()
+                            val equipos by equipoViewModel.equipos.collectAsState()
+                            val cargando by partidoViewModel.cargando.collectAsState()
+                            val mensaje by partidoViewModel.mensaje.collectAsState()
+
+                            LaunchedEffect(Unit) {
+                                partidoViewModel.obtenerResultados()
+                                partidoViewModel.listar()
+                                if (jugadores.isEmpty()) jugadorViewModel.listar()
+                                if (equipos.isEmpty()) equipoViewModel.cargarEquipos()
+                            }
+
+                            PartidosScreen(
+                                resultados = resultados,
+                                jugadores = jugadores,
+                                equipos = equipos,
+                                cargando = cargando,
+                                mensaje = mensaje,
+                                onDismissMensaje = { partidoViewModel.limpiarMensaje() },
+                                onBackClick = { navController.popBackStack() },
+                                onRefrescarClick = { partidoViewModel.obtenerResultados() },
+                                onAgregarClick = { navController.navigate("formulario_partido") },
+                                onDetalleClick = { id -> navController.navigate("detalle_partido/$id") }
+                            )
+                        }
+
+                        composable(
+                            route = "detalle_partido/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val resultados by partidoViewModel.resultados.collectAsState()
+                            val jugadores by jugadorViewModel.jugadores.collectAsState()
+                            val equipos by equipoViewModel.equipos.collectAsState()
+
+                            val resultado = resultados.find { it.idPartido == id }
+
+                            DetallePartidoScreen(
+                                resultado = resultado,
+                                jugadores = jugadores,
+                                equipos = equipos,
+                                onBackClick = { navController.popBackStack() },
+                                onEditarClick = { idPartido ->
+                                    navController.navigate("formulario_partido?id=$idPartido")
+                                },
+                                onEliminarClick = { idPartido ->
+                                    partidoViewModel.eliminar(idPartido)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = "formulario_partido?id={id}",
+                            arguments = listOf(navArgument("id") { 
+                                type = NavType.StringType
+                                nullable = true 
+                            })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val equipos by equipoViewModel.equipos.collectAsState()
+                            val partidos by partidoViewModel.partidos.collectAsState()
+                            val guardadoExitoso by partidoViewModel.guardadoExitoso.collectAsState()
+                            val mensaje by partidoViewModel.mensaje.collectAsState()
+
+                            val partidoEditar = if (id != null) partidos.find { it.idPartido == id } else null
+
+                            LaunchedEffect(id) {
+                                if (id != null && partidos.isEmpty()) {
+                                    partidoViewModel.listar()
+                                }
+                                if (equipos.isEmpty()) {
+                                    equipoViewModel.cargarEquipos()
+                                }
+                            }
+
+                            LaunchedEffect(guardadoExitoso) {
+                                if (guardadoExitoso) {
+                                    navController.popBackStack()
+                                    partidoViewModel.resetGuardado()
+                                }
+                            }
+
+                            FormularioPartidoScreen(
+                                partido = partidoEditar,
+                                equipos = equipos,
+                                isEditMode = id != null,
+                                mensajeExterno = mensaje,
+                                onBackClick = { 
+                                    partidoViewModel.limpiarMensaje()
+                                    navController.popBackStack() 
+                                },
+                                onGuardarClick = { partido ->
+                                    if (id == null) {
+                                        partidoViewModel.guardar(partido)
+                                    } else {
+                                        partidoViewModel.actualizar(id, partido)
+                                    }
+                                }
                             )
                         }
 
@@ -71,11 +181,11 @@ class MainActivity : ComponentActivity() {
                                 mensaje = mensaje,
                                 onDismissMensaje = { jugadorViewModel.limpiarMensaje() },
                                 onBackClick = { navController.popBackStack() },
-                                onAgregarClick = { navController.navigate("formulario_jugador") },
-                                onEditarClick = { jugador ->
-                                    navController.navigate("formulario_jugador?id=${jugador.idJugador}")
+                                onRefrescarClick = { jugadorViewModel.listar() },
+                                onDetalleClick = { jugador ->
+                                    navController.navigate("detalle_jugador/${jugador.idJugador}")
                                 },
-                                onEliminarClick = { id -> jugadorViewModel.eliminar(id) }
+                                onAgregarClick = { navController.navigate("formulario_jugador") }
                             )
                         }
 
@@ -93,6 +203,14 @@ class MainActivity : ComponentActivity() {
                             
                             val jugadores by jugadorViewModel.jugadores.collectAsState()
                             val equipos by equipoViewModel.equipos.collectAsState()
+                            val guardadoExitoso by jugadorViewModel.guardadoExitoso.collectAsState()
+
+                            LaunchedEffect(guardadoExitoso) {
+                                if (guardadoExitoso) {
+                                    navController.popBackStack()
+                                    jugadorViewModel.resetGuardado()
+                                }
+                            }
 
                             val jugadorEditar = jugadores.find { it.idJugador == id }
 
@@ -107,6 +225,30 @@ class MainActivity : ComponentActivity() {
                                     } else {
                                         jugadorViewModel.actualizar(id, jugador)
                                     }
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = "detalle_jugador/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val jugadores by jugadorViewModel.jugadores.collectAsState()
+                            val equipos by equipoViewModel.equipos.collectAsState()
+                            
+                            val jugador = jugadores.find { it.idJugador == id }
+                            val equipo = equipos.find { it.idEquipo == jugador?.idEquipo }
+
+                            DetalleJugadorScreen(
+                                jugador = jugador,
+                                equipo = equipo,
+                                onBackClick = { navController.popBackStack() },
+                                onEditarClick = { 
+                                    navController.navigate("formulario_jugador?id=${id}")
+                                },
+                                onEliminarClick = { idJugador ->
+                                    jugadorViewModel.eliminar(idJugador)
                                     navController.popBackStack()
                                 }
                             )

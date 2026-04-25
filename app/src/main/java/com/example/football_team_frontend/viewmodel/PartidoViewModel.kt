@@ -30,6 +30,9 @@ class PartidoViewModel : ViewModel() {
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando
 
+    private val _guardadoExitoso = MutableStateFlow(false)
+    val guardadoExitoso: StateFlow<Boolean> = _guardadoExitoso
+
     // ================= CRUD =================
 
     fun listar() {
@@ -48,12 +51,21 @@ class PartidoViewModel : ViewModel() {
     fun guardar(partido: Partido) {
         viewModelScope.launch {
             _cargando.value = true
+            _guardadoExitoso.value = false
+            _mensaje.value = null
             try {
                 repository.guardar(partido)
-                _mensaje.value = "Partido guardado correctamente"
+                _mensaje.value = "¡Partido guardado con éxito!"
+                obtenerResultados()
                 listar()
+                _guardadoExitoso.value = true
             } catch (e: Exception) {
-                _mensaje.value = "Error al guardar: ${e.message}"
+                val msg = e.message ?: ""
+                _mensaje.value = when {
+                    msg.contains("400") -> "No se pudo guardar: Asegúrate de que los equipos sean distintos y los campos estén llenos."
+                    msg.contains("500") -> "Error del servidor: No se pudo registrar el partido en este momento."
+                    else -> "Error de conexión: Verifica tu internet e inténtalo de nuevo."
+                }
             } finally {
                 _cargando.value = false
             }
@@ -63,12 +75,24 @@ class PartidoViewModel : ViewModel() {
     fun actualizar(id: Long, partido: Partido) {
         viewModelScope.launch {
             _cargando.value = true
+            _guardadoExitoso.value = false
+            _mensaje.value = null
             try {
-                repository.actualizar(id, partido)
-                _mensaje.value = "Partido actualizado correctamente"
+                // Aseguramos que el objeto lleve el ID correcto para evitar errores 400 por desincronización
+                val partidoActualizado = partido.copy(idPartido = id)
+                repository.actualizar(id, partidoActualizado)
+                _mensaje.value = "¡Cambios guardados correctamente!"
+                obtenerResultados()
                 listar()
+                _guardadoExitoso.value = true
             } catch (e: Exception) {
-                _mensaje.value = "Error al actualizar: ${e.message}"
+                val msg = e.message ?: ""
+                _mensaje.value = when {
+                    msg.contains("400") -> "No se pudo actualizar: Revisa que los goles sean válidos y que no haya conflictos en los datos."
+                    msg.contains("404") -> "El partido ya no existe o fue eliminado."
+                    msg.contains("500") -> "Error del servidor: No se pudo procesar la actualización."
+                    else -> "No se pudo conectar: Revisa tu conexión a internet."
+                }
             } finally {
                 _cargando.value = false
             }
@@ -78,12 +102,16 @@ class PartidoViewModel : ViewModel() {
     fun eliminar(id: Long) {
         viewModelScope.launch {
             _cargando.value = true
+            _guardadoExitoso.value = false
+            _mensaje.value = null
             try {
                 repository.eliminar(id)
-                _mensaje.value = "Partido eliminado correctamente"
+                _mensaje.value = "¡Partido eliminado con éxito!"
+                obtenerResultados()
                 listar()
+                _guardadoExitoso.value = true
             } catch (e: Exception) {
-                _mensaje.value = "Error al eliminar: ${e.message}"
+                _mensaje.value = "No se pudo eliminar el partido. Inténtalo más tarde."
             } finally {
                 _cargando.value = false
             }
@@ -120,5 +148,9 @@ class PartidoViewModel : ViewModel() {
 
     fun limpiarMensaje() {
         _mensaje.value = null
+    }
+
+    fun resetGuardado() {
+        _guardadoExitoso.value = false
     }
 }

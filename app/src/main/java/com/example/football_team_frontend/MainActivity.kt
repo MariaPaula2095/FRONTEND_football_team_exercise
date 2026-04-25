@@ -22,7 +22,7 @@ import com.example.football_team_frontend.ui.theme.FootballTheme
 import com.example.football_team_frontend.viewmodel.EquipoViewModel
 import com.example.football_team_frontend.viewmodel.JugadorViewModel
 import com.example.football_team_frontend.viewmodel.PartidoViewModel
-import com.example.football_team_frontend.viewmodel.EntrenadorViewModel
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

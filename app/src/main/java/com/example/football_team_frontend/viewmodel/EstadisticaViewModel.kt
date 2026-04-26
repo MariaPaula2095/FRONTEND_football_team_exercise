@@ -7,7 +7,7 @@ import com.example.football_team_frontend.repository.EstadisticaJugadorRepositor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
+import com.example.football_team_frontend.model.Jugador
 class EstadisticaViewModel : ViewModel() {
 
     private val repository = EstadisticaJugadorRepository()
@@ -105,5 +105,18 @@ class EstadisticaViewModel : ViewModel() {
 
     fun resetGuardado() {
         _guardadoExitoso.value = false
+    }
+
+    private val _jugadoresConMasGoles = MutableStateFlow<List<Jugador>>(emptyList())
+    val jugadoresConMasGoles: StateFlow<List<Jugador>> = _jugadoresConMasGoles
+
+    fun buscarJugadoresPorGoles(minGoles: Int) {
+        viewModelScope.launch {
+            try {
+                _jugadoresConMasGoles.value = repository.jugadoresConMasGoles(minGoles)
+            } catch (e: Exception) {
+                _mensaje.value = "Error al buscar jugadores: ${e.message}"
+            }
+        }
     }
 }

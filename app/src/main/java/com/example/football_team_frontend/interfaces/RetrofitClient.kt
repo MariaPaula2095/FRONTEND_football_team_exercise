@@ -13,7 +13,7 @@ Configura Retrofit con tiempos de espera optimizados
 Genera las instancias de API para el proyecto
  */
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.18.17:8080/"
+    private const val BASE_URL = "http://192.168.0.104:8080/"
 
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS) // Tiempo máximo para conectar

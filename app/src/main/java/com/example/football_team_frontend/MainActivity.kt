@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.football_team_frontend.ui.screens.*
@@ -34,9 +35,22 @@ class MainActivity : ComponentActivity() {
         setContent {
             FootballTheme {
                 val navController = rememberNavController()
+                val currentBackStack by navController.currentBackStackEntryAsState()
+                val routeActual = currentBackStack?.destination?.route
 
                 Scaffold(
-                    modifier = Modifier.fillMaxSize()
+                    modifier  = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        if (routeActual != "inicio" && routeActual != "splash") {
+                            BottomNavigationBar(
+                                currentRoute        = routeActual,
+                                onInicioClick       = { navController.navigate("inicio") { popUpTo("inicio") { inclusive = true } } },
+                                onJugadoresClick    = { navController.navigate("jugadores") { popUpTo("inicio") } },
+                                onEquiposClick      = { navController.navigate("equipos") { popUpTo("inicio") } },
+                                onEntrenadoresClick = { navController.navigate("entrenadores") { popUpTo("inicio") } }
+                            )
+                        }
+                    }
                 ) { innerPadding ->
                     val jugadorViewModel: JugadorViewModel = viewModel()
                     val equipoViewModel: EquipoViewModel = viewModel()
@@ -46,9 +60,18 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(
                         navController = navController,
-                        startDestination = "inicio",
-                        modifier = Modifier.padding(innerPadding)
+                        startDestination = "splash",
+                                modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable("splash") {
+                            SplashScreen(
+                                onSplashFinished = {
+                                    navController.navigate("inicio") {
+                                        popUpTo("splash") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                         composable("inicio") {
                             InicioScreen(
                                 onEquiposClick = { navController.navigate("equipos") },
@@ -64,6 +87,7 @@ class MainActivity : ComponentActivity() {
                             val partidos by partidoViewModel.resultados.collectAsState()
                             val cargando by estadisticaViewModel.cargando.collectAsState()
                             val mensaje by estadisticaViewModel.mensaje.collectAsState()
+                            val jugadoresConMasGoles by estadisticaViewModel.jugadoresConMasGoles.collectAsState() // ← nueva
 
                             LaunchedEffect(Unit) {
                                 estadisticaViewModel.obtenerEstadisticas()
@@ -71,17 +95,17 @@ class MainActivity : ComponentActivity() {
                             }
 
                             EstadisticasScreen(
-                                estadisticas = estadisticas,
-                                partidos = partidos,
-                                cargando = cargando,
-                                mensaje = mensaje,
-                                onDismissMensaje = { estadisticaViewModel.limpiarMensaje() },
-                                onBackClick = { navController.popBackStack() },
-                                onRefrescarClick = { estadisticaViewModel.obtenerEstadisticas() },
-                                onAgregarClick = { navController.navigate("formulario_estadistica") },
-                                onDetalleClick = { stat -> 
-                                    navController.navigate("detalle_estadistica/${stat.idEstadistica}")
-                                }
+                                estadisticas         = estadisticas,
+                                partidos             = partidos,
+                                cargando             = cargando,
+                                mensaje              = mensaje,
+                                jugadoresConMasGoles = jugadoresConMasGoles,                          // ← nueva
+                                onBuscarPorGoles     = { estadisticaViewModel.buscarJugadoresPorGoles(it) }, // ← nueva
+                                onDismissMensaje     = { estadisticaViewModel.limpiarMensaje() },
+                                onBackClick          = { navController.popBackStack() },
+                                onRefrescarClick     = { estadisticaViewModel.obtenerEstadisticas() },
+                                onAgregarClick       = { navController.navigate("formulario_estadistica") },
+                                onDetalleClick       = { stat -> navController.navigate("detalle_estadistica/${stat.idEstadistica}") }
                             )
                         }
 

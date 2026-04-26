@@ -84,7 +84,7 @@ fun InicioScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            TopBar()
+
 
             HeroHeader()
 
@@ -155,39 +155,8 @@ fun InicioScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp)) // Espacio final para que no pegue al borde
-        }
-    }
-}
+            AppFooter()
 
-@Composable
-private fun TopBar() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        IconButton(onClick = { }) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menú",
-                tint = Blanco
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(Color.White.copy(alpha = 0.14f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notificaciones",
-                tint = Blanco,
-                modifier = Modifier.size(22.dp)
-            )
         }
     }
 }
@@ -280,6 +249,8 @@ private fun HomeCard(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
+
+
         }
     }
 }

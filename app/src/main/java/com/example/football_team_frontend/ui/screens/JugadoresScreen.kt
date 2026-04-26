@@ -355,6 +355,10 @@ fun JugadoresScreen(
                     )
                 }
             }
+
+            item {
+                AppFooter()
+            }
         }
     }
 }
@@ -481,6 +485,7 @@ fun JugadorCard(jugador: Jugador, equipoNombre: String, onClick: () -> Unit) {
                     tint               = TextoSec,
                     modifier           = Modifier.size(18.dp)
                 )
+
             }
         }
     }

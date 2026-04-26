@@ -285,6 +285,10 @@ fun EquiposScreen(
                     )
                 }
             }
+
+            item {
+                AppFooter()
+            }
         }
     }
 }

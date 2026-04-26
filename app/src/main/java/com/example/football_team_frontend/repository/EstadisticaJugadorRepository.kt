@@ -2,6 +2,7 @@ package com.example.football_team_frontend.repository
 
 import com.example.football_team_frontend.interfaces.RetrofitClient
 import com.example.football_team_frontend.model.EstadisticasJugadorDto
+import com.example.football_team_frontend.model.Jugador
 
 class EstadisticaJugadorRepository {
 
@@ -23,5 +24,9 @@ class EstadisticaJugadorRepository {
 
     suspend fun totalGolesEquipo(idEquipo: Int): Int {
         return RetrofitClient.estadisticaJugadorApi.totalGolesEquipo(idEquipo)
+    }
+
+    suspend fun jugadoresConMasGoles(minGoles: Int): List<Jugador> {
+        return RetrofitClient.jugadorApi.jugadoresConMasGoles(minGoles)
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.model.EstadisticasJugadorDto
+import com.example.football_team_frontend.model.Jugador
 import com.example.football_team_frontend.model.ResultadoPartido
 import com.example.football_team_frontend.ui.theme.*
 
@@ -39,6 +40,8 @@ private val StatColWidth = 38.dp
 fun EstadisticasScreen(
     estadisticas: List<EstadisticasJugadorDto>,
     partidos: List<ResultadoPartido>,
+    jugadoresConMasGoles: List<Jugador>,          // ← nuevo
+    onBuscarPorGoles: (Int) -> Unit,              // ← nuevo
     cargando: Boolean,
     mensaje: String?,
     onDismissMensaje: () -> Unit,
@@ -198,6 +201,88 @@ fun EstadisticasScreen(
                 )
             }
 
+            // ── Buscador por goles ────────────────────────────────────────────
+            var minGoles by remember { mutableStateOf("") }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape    = RoundedCornerShape(16.dp),
+                colors   = CardDefaults.cardColors(containerColor = Color(0xFF244A34))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        "🏆 Jugadores por mínimo de goles",
+                        color      = Verde,
+                        fontSize   = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value         = minGoles,
+                            onValueChange = { if (it.length <= 3) minGoles = it },
+                            modifier      = Modifier.weight(1f),
+                            placeholder   = { Text("Mín. goles", color = Color(0xFF7FB99A), fontSize = 13.sp) },
+                            singleLine    = true,
+                            shape         = RoundedCornerShape(12.dp),
+                            colors        = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor   = Color(0xFF1F4A34),
+                                unfocusedContainerColor = Color(0xFF1F4A34),
+                                focusedBorderColor      = Verde,
+                                unfocusedBorderColor    = Color(0xFF2D6645),
+                                focusedTextColor        = Color.White,
+                                unfocusedTextColor      = Color.White,
+                                cursorColor             = Verde
+                            )
+                        )
+                        Button(
+                            onClick = { minGoles.toIntOrNull()?.let { onBuscarPorGoles(it) } },
+                            shape   = RoundedCornerShape(12.dp),
+                            colors  = ButtonDefaults.buttonColors(containerColor = Verde)
+                        ) {
+                            Text("Buscar", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        }
+                    }
+                    if (jugadoresConMasGoles.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        jugadoresConMasGoles.forEach { jugador ->
+                            Row(
+                                modifier          = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Box(
+                                    modifier         = Modifier
+                                        .size(32.dp)
+                                        .background(Verde.copy(alpha = 0.18f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        jugador.nombre.split(" ").filter { it.isNotEmpty() }
+                                            .take(2).joinToString("") { it.first().uppercaseChar().toString() },
+                                        color      = Verde,
+                                        fontSize   = 11.sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(jugador.nombre, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    Text(jugador.posicion, color = Color(0xFF7FB99A), fontSize = 11.sp)
+                                }
+                            }
+                            HorizontalDivider(color = Color(0xFF1F4A34), thickness = 1.dp)
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── Encabezado de tabla con ⓘ integrado al lado de las etiquetas ──
@@ -277,7 +362,9 @@ fun EstadisticasScreen(
                         }
                     }
                 }
+
             }
+            AppFooter()
         }
     }
 }
@@ -467,6 +554,8 @@ fun EstadisticasprincipalPreview() {
     EstadisticasScreen(
         estadisticas     = estadisticasFake,
         partidos         = partidosFake,
+        jugadoresConMasGoles = emptyList(),   // ← nuevo
+        onBuscarPorGoles     = {},            // ← nuevo
         cargando         = false,
         mensaje          = null,
         onDismissMensaje = {},

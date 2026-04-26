@@ -371,6 +371,8 @@ fun EntrenadorCard(entrenador: Entrenador, onClick: () -> Unit) {
                 tint               = TextoSec,
                 modifier           = Modifier.size(18.dp)
             )
+
+
         }
     }
 }

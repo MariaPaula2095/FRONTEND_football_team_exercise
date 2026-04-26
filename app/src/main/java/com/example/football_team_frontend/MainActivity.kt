@@ -20,6 +20,7 @@ import androidx.navigation.navArgument
 import com.example.football_team_frontend.ui.screens.*
 import com.example.football_team_frontend.ui.theme.FootballTheme
 import com.example.football_team_frontend.viewmodel.EquipoViewModel
+import com.example.football_team_frontend.viewmodel.EstadisticaViewModel
 import com.example.football_team_frontend.viewmodel.JugadorViewModel
 import com.example.football_team_frontend.viewmodel.PartidoViewModel
 
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
                     val jugadorViewModel: JugadorViewModel = viewModel()
                     val equipoViewModel: EquipoViewModel = viewModel()
                     val partidoViewModel: PartidoViewModel = viewModel()
+                    val estadisticaViewModel: EstadisticaViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -51,7 +53,101 @@ class MainActivity : ComponentActivity() {
                                 onJugadoresClick = { navController.navigate("jugadores") },
                                 onPartidosClick = { navController.navigate("partidos") },
                                 onEntrenadoresClick = { /* Próximamente */ },
-                                onEstadisticasClick = { /* Próximamente */ }
+                                onEstadisticasClick = { navController.navigate("estadisticas") }
+                            )
+                        }
+
+                        composable("estadisticas") {
+                            val estadisticas by estadisticaViewModel.estadisticas.collectAsState()
+                            val partidos by partidoViewModel.resultados.collectAsState()
+                            val cargando by estadisticaViewModel.cargando.collectAsState()
+                            val mensaje by estadisticaViewModel.mensaje.collectAsState()
+
+                            LaunchedEffect(Unit) {
+                                estadisticaViewModel.obtenerEstadisticas()
+                                if (partidos.isEmpty()) partidoViewModel.obtenerResultados()
+                            }
+
+                            EstadisticasScreen(
+                                estadisticas = estadisticas,
+                                partidos = partidos,
+                                cargando = cargando,
+                                mensaje = mensaje,
+                                onDismissMensaje = { estadisticaViewModel.limpiarMensaje() },
+                                onBackClick = { navController.popBackStack() },
+                                onRefrescarClick = { estadisticaViewModel.obtenerEstadisticas() },
+                                onAgregarClick = { navController.navigate("formulario_estadistica") },
+                                onDetalleClick = { stat -> 
+                                    navController.navigate("detalle_estadistica/${stat.idEstadistica}")
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = "detalle_estadistica/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val estadisticas by estadisticaViewModel.estadisticas.collectAsState()
+                            val partidos by partidoViewModel.resultados.collectAsState()
+
+                            val estadistica = estadisticas.find { it.idEstadistica == id }
+                            val partido = partidos.find { it.idPartido == estadistica?.idPartido }
+
+                            DetalleEstadisticaScreen(
+                                estadistica = estadistica,
+                                partido = partido,
+                                onBackClick = { navController.popBackStack() },
+                                onEditarClick = { stat ->
+                                    navController.navigate("formulario_estadistica?id=${stat.idEstadistica}")
+                                },
+                                onEliminarClick = { idEstadistica ->
+                                    estadisticaViewModel.eliminarEstadistica(idEstadistica)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable(
+                            route = "formulario_estadistica?id={id}",
+                            arguments = listOf(navArgument("id") { 
+                                type = NavType.StringType
+                                nullable = true 
+                            })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val estadisticas by estadisticaViewModel.estadisticas.collectAsState()
+                            val jugadores by jugadorViewModel.jugadores.collectAsState()
+                            val partidos by partidoViewModel.resultados.collectAsState()
+                            val guardadoExitoso by estadisticaViewModel.guardadoExitoso.collectAsState()
+
+                            val estadisticaEditar = if (id != null) estadisticas.find { it.idEstadistica == id } else null
+
+                            LaunchedEffect(Unit) {
+                                if (jugadores.isEmpty()) jugadorViewModel.listar()
+                                if (partidos.isEmpty()) partidoViewModel.obtenerResultados()
+                            }
+
+                            LaunchedEffect(guardadoExitoso) {
+                                if (guardadoExitoso) {
+                                    navController.popBackStack()
+                                    estadisticaViewModel.resetGuardado()
+                                }
+                            }
+
+                            FormularioEstadisticaScreen(
+                                estadistica = estadisticaEditar,
+                                jugadores = jugadores,
+                                partidos = partidos,
+                                isEditMode = id != null,
+                                onBackClick = { navController.popBackStack() },
+                                onGuardarClick = { dto ->
+                                    if (id == null) {
+                                        estadisticaViewModel.guardarEstadistica(dto)
+                                    } else {
+                                        estadisticaViewModel.actualizarEstadistica(id, dto)
+                                    }
+                                }
                             )
                         }
 

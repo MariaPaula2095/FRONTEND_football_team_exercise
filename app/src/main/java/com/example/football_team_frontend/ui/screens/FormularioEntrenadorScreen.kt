@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.football_team_frontend.model.Entrenador
 import com.example.football_team_frontend.model.Equipo
 import com.example.football_team_frontend.ui.theme.*
 import java.text.SimpleDateFormat
@@ -25,22 +26,30 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormularioEquipoScreen(
-    equipo: Equipo? = null,
+fun FormularioEntrenadorScreen(
+    entrenador: Entrenador? = null,
+    equipos: List<Equipo>,
     onBackClick: () -> Unit,
-    onGuardarClick: (Equipo) -> Unit
+    onGuardarClick: (Entrenador) -> Unit
 ) {
-    var nombre              by remember { mutableStateOf(equipo?.nombre ?: "") }
-    var ciudad              by remember { mutableStateOf(equipo?.ciudad ?: "") }
-    var fechaFundacion      by remember { mutableStateOf(
-        equipo?.fundacion?.let { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it) } ?: ""
-    )}
-    var mostrarDatePicker   by remember { mutableStateOf(false) }
+    var nombre              by remember { mutableStateOf(entrenador?.nombre ?: "") }
+    var especialidad        by remember { mutableStateOf(entrenador?.especialidad ?: "") }
+    var equipoSeleccionado  by remember { mutableStateOf(entrenador?.equipo) }
+    var expandedEspecialidad by remember { mutableStateOf(false) }
+    var expandedEquipo      by remember { mutableStateOf(false) }
     var errorTexto          by remember { mutableStateOf<String?>(null) }
     var mostrarConfirmacion by remember { mutableStateOf(false) }
 
+    val especialidades = listOf(
+        "Entrenador Principal",
+        "Asistente Técnico",
+        "Entrenador de Porteros",
+        "Preparador Físico",
+        "Analista Táctico"
+    )
+
     fun validar() {
-        if (nombre.isBlank() || ciudad.isBlank() || fechaFundacion.isBlank()) {
+        if (nombre.isBlank() || especialidad.isBlank() || equipoSeleccionado == null) {
             errorTexto = "Por favor, completa todos los campos obligatorios."
             return
         }
@@ -59,17 +68,12 @@ fun FormularioEquipoScreen(
             text  = { Text("Se guardará la información de $nombre en la base de datos.") },
             confirmButton = {
                 TextButton(onClick = {
-
-                    val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    formatter.timeZone = TimeZone.getTimeZone("UTC")
-                    val fechaDate = formatter.parse(fechaFundacion) ?: Date()
-
                     onGuardarClick(
-                        Equipo(
-                            idEquipo  = equipo?.idEquipo ?: 0L,
-                            nombre    = nombre,
-                            ciudad    = ciudad,
-                            fundacion = fechaDate
+                        Entrenador(
+                            idEntrenador = entrenador?.idEntrenador ?: 0L,
+                            nombre       = nombre,
+                            especialidad = especialidad,
+                            equipo       = equipoSeleccionado!!
                         )
                     )
                     mostrarConfirmacion = false
@@ -83,33 +87,6 @@ fun FormularioEquipoScreen(
                 }
             }
         )
-    }
-
-    // ── DatePicker ────────────────────────────────────────────────────────
-    if (mostrarDatePicker) {
-        val datePickerState = rememberDatePickerState()
-
-        DatePickerDialog(
-            onDismissRequest = { mostrarDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        fechaFundacion = formatter.format(Date(millis))
-                    }
-                    mostrarDatePicker = false
-                }) {
-                    Text("Aceptar", color = Verde)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { mostrarDatePicker = false }) {
-                    Text("Cancelar", color = GrisClaro)
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
     }
 
     // ── Contenido principal ───────────────────────────────────────────────
@@ -139,7 +116,7 @@ fun FormularioEquipoScreen(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text       = if (equipo == null) "Nuevo Equipo" else "Editar Equipo",
+                    text       = if (entrenador == null) "Nuevo Entrenador" else "Editar Entrenador",
                     color      = Blanco,
                     fontSize   = 22.sp,
                     fontWeight = FontWeight.Bold
@@ -148,7 +125,7 @@ fun FormularioEquipoScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Avatar con iniciales (reemplaza la foto de jugador)
+            // Avatar con iniciales
             Box(
                 modifier         = Modifier
                     .size(110.dp)
@@ -182,52 +159,88 @@ fun FormularioEquipoScreen(
 
             // ── Nombre ────────────────────────────────────────────────────
             FormTextField(
-                label         = "Nombre del Equipo",
+                label         = "Nombre Completo",
                 value         = nombre,
                 onValueChange = { nombre = it },
-                icon          = Icons.Default.Shield
+                icon          = Icons.Default.Person
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Ciudad ────────────────────────────────────────────────────
-            FormTextField(
-                label         = "Ciudad",
-                value         = ciudad,
-                onValueChange = { ciudad = it },
-                icon          = Icons.Default.LocationOn
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ── Fecha de Fundación ────────────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { mostrarDatePicker = true }
+            // ── Especialidad dropdown ─────────────────────────────────────
+            ExposedDropdownMenuBox(
+                expanded        = expandedEspecialidad,
+                onExpandedChange = { expandedEspecialidad = !expandedEspecialidad }
             ) {
                 OutlinedTextField(
-                    value         = fechaFundacion,
+                    value         = especialidad,
                     onValueChange = {},
                     readOnly      = true,
-                    enabled       = false,
-                    label         = { Text("Fecha de Fundación", color = GrisClaro) },
-                    leadingIcon   = {
-                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Verde)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape    = RoundedCornerShape(18.dp),
-                    colors   = OutlinedTextFieldDefaults.colors(
-                        disabledContainerColor = Color(0xFF1F4A43),
-                        disabledBorderColor    = Color.Transparent,
-                        disabledTextColor      = Blanco,
-                        disabledLabelColor     = GrisClaro,
-                        focusedContainerColor  = Color(0xFF1F4A43),
-                        unfocusedContainerColor= Color(0xFF1F4A43),
-                        focusedBorderColor     = Verde,
-                        unfocusedBorderColor   = Color.Transparent
+                    label         = { Text("Especialidad", color = GrisClaro) },
+                    modifier      = Modifier.menuAnchor().fillMaxWidth(),
+                    leadingIcon   = { Icon(Icons.Default.Star, null, tint = Verde) },
+                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEspecialidad) },
+                    shape         = RoundedCornerShape(18.dp),
+                    colors        = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor   = Color(0xFF1F4A43),
+                        unfocusedContainerColor = Color(0xFF1F4A43),
+                        focusedBorderColor      = Verde,
+                        unfocusedBorderColor    = Color.Transparent,
+                        focusedTextColor        = Blanco,
+                        unfocusedTextColor      = Blanco
                     )
                 )
+                ExposedDropdownMenu(
+                    expanded        = expandedEspecialidad,
+                    onDismissRequest = { expandedEspecialidad = false },
+                    modifier        = Modifier.background(Color(0xFF1F4A43))
+                ) {
+                    especialidades.forEach { esp ->
+                        DropdownMenuItem(
+                            text    = { Text(esp, color = Blanco) },
+                            onClick = { especialidad = esp; expandedEspecialidad = false }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── Equipo dropdown ───────────────────────────────────────────
+            ExposedDropdownMenuBox(
+                expanded         = expandedEquipo,
+                onExpandedChange = { expandedEquipo = !expandedEquipo }
+            ) {
+                OutlinedTextField(
+                    value         = equipoSeleccionado?.nombre ?: "Seleccionar Equipo",
+                    onValueChange = {},
+                    readOnly      = true,
+                    label         = { Text("Equipo", color = GrisClaro) },
+                    modifier      = Modifier.menuAnchor().fillMaxWidth(),
+                    leadingIcon   = { Icon(Icons.Default.Shield, null, tint = Verde) },
+                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipo) },
+                    shape         = RoundedCornerShape(18.dp),
+                    colors        = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor   = Color(0xFF1F4A43),
+                        unfocusedContainerColor = Color(0xFF1F4A43),
+                        focusedBorderColor      = Verde,
+                        unfocusedBorderColor    = Color.Transparent,
+                        focusedTextColor        = Blanco,
+                        unfocusedTextColor      = Blanco
+                    )
+                )
+                ExposedDropdownMenu(
+                    expanded         = expandedEquipo,
+                    onDismissRequest = { expandedEquipo = false },
+                    modifier         = Modifier.background(Color(0xFF1F4A43))
+                ) {
+                    equipos.forEach { eq ->
+                        DropdownMenuItem(
+                            text    = { Text(eq.nombre, color = Blanco) },
+                            onClick = { equipoSeleccionado = eq; expandedEquipo = false }
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -240,7 +253,7 @@ fun FormularioEquipoScreen(
                 colors   = ButtonDefaults.buttonColors(containerColor = Verde)
             ) {
                 Text(
-                    text       = if (equipo == null) "GUARDAR EQUIPO" else "ACTUALIZAR EQUIPO",
+                    text       = if (entrenador == null) "GUARDAR ENTRENADOR" else "ACTUALIZAR ENTRENADOR",
                     fontWeight = FontWeight.Bold,
                     fontSize   = 16.sp,
                     color      = Blanco
@@ -264,16 +277,21 @@ fun FormularioEquipoScreen(
 // ── Preview ───────────────────────────────────────────────────────────────
 @Preview(showBackground = true, backgroundColor = 0xFF0D2B1C, showSystemUi = true)
 @Composable
-fun FormularioEquipoPreview() {
+fun FormularioEntrenadorPreview() {
     val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val equipoFake = Equipo(
-        idEquipo  = 1L,
-        nombre    = "Millonarios FC",
-        ciudad    = "Bogotá",
-        fundacion = formato.parse("1946-06-18")!!
+    val equiposFake = listOf(
+        Equipo(1L, "Millonarios FC",    "Bogotá",   formato.parse("1946-06-18")!!),
+        Equipo(2L, "Atlético Nacional", "Medellín", formato.parse("1947-03-07")!!)
     )
-    FormularioEquipoScreen(
-        equipo         = equipoFake,
+    val entrenadorFake = Entrenador(
+        idEntrenador = 1L,
+        nombre       = "Alberto Gamero",
+        especialidad = "Entrenador Principal",
+        equipo       = equiposFake[0]
+    )
+    FormularioEntrenadorScreen(
+        entrenador     = entrenadorFake,
+        equipos        = equiposFake,
         onBackClick    = {},
         onGuardarClick = {}
     )

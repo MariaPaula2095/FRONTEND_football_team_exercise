@@ -9,8 +9,8 @@ class EntrenadorRepository {
         return RetrofitClient.entrenadorApi.obtenerEntrenadores()
     }
 
-    suspend fun obtenerEntrenador(id: Long): Entrenador {
-        return RetrofitClient.entrenadorApi.obtenerEntrenador(id)
+    suspend fun actualizarEntrenador(id: Long, entrenador: Entrenador): Entrenador {
+        return RetrofitClient.entrenadorApi.actualizarEntrenador(id, entrenador)
     }
 
     suspend fun guardarEntrenador(entrenador: Entrenador): Entrenador {

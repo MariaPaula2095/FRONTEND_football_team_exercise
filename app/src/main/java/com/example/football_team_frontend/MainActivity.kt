@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.football_team_frontend.ui.screens.*
 import com.example.football_team_frontend.ui.theme.FootballTheme
+import com.example.football_team_frontend.viewmodel.EntrenadorViewModel
 import com.example.football_team_frontend.viewmodel.EquipoViewModel
 import com.example.football_team_frontend.viewmodel.EstadisticaViewModel
 import com.example.football_team_frontend.viewmodel.JugadorViewModel
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
                     val equipoViewModel: EquipoViewModel = viewModel()
                     val partidoViewModel: PartidoViewModel = viewModel()
                     val estadisticaViewModel: EstadisticaViewModel = viewModel()
+                    val entrenadorViewModel: EntrenadorViewModel = viewModel()
 
                     NavHost(
                         navController = navController,
@@ -52,7 +54,7 @@ class MainActivity : ComponentActivity() {
                                 onEquiposClick = { navController.navigate("equipos") },
                                 onJugadoresClick = { navController.navigate("jugadores") },
                                 onPartidosClick = { navController.navigate("partidos") },
-                                onEntrenadoresClick = { /* Próximamente */ },
+                                onEntrenadoresClick = { navController.navigate("entrenadores") },
                                 onEstadisticasClick = { navController.navigate("estadisticas") }
                             )
                         }
@@ -351,29 +353,131 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("equipos") {
-                            val equipos by equipoViewModel.equipos.collectAsState()
-                            val searchText by equipoViewModel.search.collectAsState()
+                            val equipos     by equipoViewModel.equipos.collectAsState()
+                            val searchQuery by equipoViewModel.search.collectAsState()
+                            val cargando    by equipoViewModel.isLoading.collectAsState()
+                            val error       by equipoViewModel.error.collectAsState()
 
-                            EquipoScreen(
-                                equipos = equipos,
-                                searchText = searchText,
-                                onSearchChange = { equipoViewModel.onSearchChange(it) },
-                                onBackClick = { navController.popBackStack() },
-                                onAgregarClick = { navController.navigate("crear_equipo") },
-                                onEliminarClick = { id -> equipoViewModel.eliminarEquipo(id) }
+                            EquiposScreen(
+                                equipos          = equipos,
+                                searchQuery      = searchQuery,
+                                cargando         = cargando,
+                                mensaje          = error,
+                                onDismissMensaje = {},
+                                onSearchChange   = { equipoViewModel.onSearchChange(it) },
+                                onBackClick      = { navController.popBackStack() },
+                                onRefrescarClick = { equipoViewModel.cargarEquipos() },
+                                onAgregarClick   = { navController.navigate("crear_equipo") },
+                                onDetalleClick   = { equipo -> navController.navigate("detalle_equipo/${equipo.idEquipo}") }
                             )
                         }
 
                         composable("crear_equipo") {
-                            CrearEquipoScreen(
-                                nombre = "",
-                                ciudad = "",
-                                fundacion = "",
-                                onNombreChange = {},
-                                onCiudadChange = {},
-                                onFundacionChange = {},
-                                onBackClick = { navController.popBackStack() },
-                                onGuardarClick = { navController.popBackStack() }
+                            FormularioEquipoScreen(
+                                equipo         = null,
+                                onBackClick    = { navController.popBackStack() },
+                                onGuardarClick = { equipo ->
+                                    equipoViewModel.guardarEquipo(equipo)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable("detalle_equipo/{id}") { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val equipos by equipoViewModel.equipos.collectAsState()
+                            val equipo = equipos.find { it.idEquipo == id }
+
+                            DetalleEquipoScreen(
+                                equipo          = equipo,
+                                onBackClick     = { navController.popBackStack() },
+                                onEditarClick   = { navController.navigate("editar_equipo/$id") },
+                                onEliminarClick = { equipoId ->
+                                    equipoViewModel.eliminarEquipo(equipoId)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable("editar_equipo/{id}") { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val equipos by equipoViewModel.equipos.collectAsState()
+                            val equipo = equipos.find { it.idEquipo == id }
+
+                            FormularioEquipoScreen(
+                                equipo         = equipo,
+                                onBackClick    = { navController.popBackStack() },
+                                onGuardarClick = { equipoActualizado ->
+                                    equipoViewModel.actualizarEquipo(id!!, equipoActualizado)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable("entrenadores") {
+                            val entrenadores by entrenadorViewModel.entrenadores.collectAsState()
+                            val searchQuery  by entrenadorViewModel.search.collectAsState()
+                            val cargando     by entrenadorViewModel.isLoading.collectAsState()
+                            val error        by entrenadorViewModel.error.collectAsState()
+
+                            EntrenadoresScreen(
+                                entrenadores     = entrenadores,
+                                searchQuery      = searchQuery,
+                                cargando         = cargando,
+                                mensaje          = error,
+                                onDismissMensaje = {},
+                                onSearchChange   = { entrenadorViewModel.onSearchChange(it) },
+                                onBackClick      = { navController.popBackStack() },
+                                onRefrescarClick = { entrenadorViewModel.cargarEntrenadores() },
+                                onAgregarClick   = { navController.navigate("crear_entrenador") },
+                                onDetalleClick   = { entrenador -> navController.navigate("detalle_entrenador/${entrenador.idEntrenador}") }
+                            )
+                        }
+
+                        composable("crear_entrenador") {
+                            val equipos by equipoViewModel.equipos.collectAsState()
+
+                            FormularioEntrenadorScreen(
+                                entrenador     = null,
+                                equipos        = equipos,
+                                onBackClick    = { navController.popBackStack() },
+                                onGuardarClick = { entrenador ->
+                                    entrenadorViewModel.guardarEntrenador(entrenador)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable("detalle_entrenador/{id}") { backStackEntry ->
+                            val id           = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val entrenadores by entrenadorViewModel.entrenadores.collectAsState()
+                            val entrenador   = entrenadores.find { it.idEntrenador == id }
+
+                            DetalleEntrenadorScreen(
+                                entrenador      = entrenador,
+                                onBackClick     = { navController.popBackStack() },
+                                onEditarClick   = { navController.navigate("editar_entrenador/$id") },
+                                onEliminarClick = { entrenadorId ->
+                                    entrenadorViewModel.eliminarEntrenador(entrenadorId)
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+
+                        composable("editar_entrenador/{id}") { backStackEntry ->
+                            val id           = backStackEntry.arguments?.getString("id")?.toLongOrNull()
+                            val entrenadores by entrenadorViewModel.entrenadores.collectAsState()
+                            val equipos      by equipoViewModel.equipos.collectAsState()
+                            val entrenador   = entrenadores.find { it.idEntrenador == id }
+
+                            FormularioEntrenadorScreen(
+                                entrenador     = entrenador,
+                                equipos        = equipos,
+                                onBackClick    = { navController.popBackStack() },
+                                onGuardarClick = { entrenadorActualizado ->
+                                    entrenadorViewModel.actualizarEntrenador(id!!, entrenadorActualizado)
+                                    navController.popBackStack()
+                                }
                             )
                         }
                     }

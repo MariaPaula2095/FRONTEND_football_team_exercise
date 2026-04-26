@@ -5,17 +5,18 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface EntrenadorApi {
 
-    @GET("/api/entrenadores")
+    @GET("/api/entrenadores/listar")
     suspend fun obtenerEntrenadores(): List<Entrenador>
 
-    @GET("/api/entrenadores/{id}")
-    suspend fun obtenerEntrenador(@Path("id") id: Long): Entrenador
+    @PUT("/api/entrenadores/actualizar/{id}")
+    suspend fun actualizarEntrenador(@Path("id") id: Long, @Body entrenador: Entrenador): Entrenador
 
-    @POST("/api/entrenadores")
+    @POST("/api/entrenadores/guardar")
     suspend fun guardarEntrenador(@Body entrenador: Entrenador): Entrenador
 
     @DELETE("/api/entrenadores/{id}")

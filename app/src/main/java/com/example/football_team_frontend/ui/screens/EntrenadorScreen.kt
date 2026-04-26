@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -22,23 +20,34 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.football_team_frontend.model.Entrenador
 import com.example.football_team_frontend.model.Equipo
 import com.example.football_team_frontend.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-// ── Paleta interna ──────────────────────────────────────────────────────────
+// ── Paleta ──────────────────────────────────────────────────────────────────
 private val Superficie    = Color(0xFF1A3D2C)
 private val SuperficieAlt = Color(0xFF153224)
 private val FichaFondo    = Color(0xFF1F4A34)
 private val BorderSutil   = Color(0xFF2D6645)
 private val TextoSec      = Color(0xFF7FB99A)
 
-
+// Color por especialidad
+private fun colorEspecialidad(especialidad: String): Color = when {
+    especialidad.contains("Portero",    ignoreCase = true) -> Color(0xFFFFA726)
+    especialidad.contains("Defensivo",  ignoreCase = true) -> Color(0xFF42A5F5)
+    especialidad.contains("Ofensivo",   ignoreCase = true) -> Color(0xFFEF5350)
+    especialidad.contains("Físico",     ignoreCase = true) ||
+            especialidad.contains("Fisico",     ignoreCase = true) -> Color(0xFF26C6DA)
+    especialidad.contains("Táctico",    ignoreCase = true) ||
+            especialidad.contains("Tactico",    ignoreCase = true) -> Color(0xFFAB47BC)
+    else                                                    -> Verde
+}
 
 @Composable
-fun EquiposScreen(
-    equipos: List<Equipo>,
+fun EntrenadoresScreen(
+    entrenadores: List<Entrenador>,
     searchQuery: String,
     cargando: Boolean = false,
     mensaje: String? = null,
@@ -47,9 +56,9 @@ fun EquiposScreen(
     onBackClick: () -> Unit,
     onRefrescarClick: () -> Unit,
     onAgregarClick: () -> Unit,
-    onDetalleClick: (Equipo) -> Unit
+    onDetalleClick: (Entrenador) -> Unit
 ) {
-    val snackbarHostState  = remember { SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(mensaje) {
         mensaje?.let {
@@ -57,8 +66,6 @@ fun EquiposScreen(
             onDismissMensaje()
         }
     }
-
-
 
     Scaffold(
         containerColor = SuperficieAlt,
@@ -70,7 +77,7 @@ fun EquiposScreen(
                 contentColor   = Color.White,
                 shape          = RoundedCornerShape(50.dp),
                 icon           = { Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp)) },
-                text           = { Text("Nuevo equipo", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+                text           = { Text("Nuevo entrenador", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
             )
         }
     ) { padding ->
@@ -95,7 +102,6 @@ fun EquiposScreen(
                         .padding(horizontal = 20.dp, vertical = 20.dp)
                 ) {
                     Column {
-                        // Fila de navegación
                         Row(
                             modifier          = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -133,14 +139,13 @@ fun EquiposScreen(
 
                         Spacer(Modifier.height(20.dp))
 
-                        // Título + contador
                         Row(
                             modifier              = Modifier.fillMaxWidth(),
                             verticalAlignment     = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text       = "Lista de Equipos",
+                                text       = "Entrenadores",
                                 modifier   = Modifier.weight(1f),
                                 color      = Color.White,
                                 fontSize   = 30.sp,
@@ -152,15 +157,12 @@ fun EquiposScreen(
 
                             Box(
                                 modifier = Modifier
-                                    .background(
-                                        Verde.copy(alpha = 0.2f),
-                                        RoundedCornerShape(12.dp)
-                                    )
+                                    .background(Verde.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
                                     .padding(horizontal = 14.dp, vertical = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text       = "${equipos.size}",
+                                    text       = "${entrenadores.size}",
                                     color      = Verde,
                                     fontSize   = 22.sp,
                                     fontWeight = FontWeight.Black
@@ -183,7 +185,7 @@ fun EquiposScreen(
                         value         = searchQuery,
                         onValueChange = onSearchChange,
                         modifier      = Modifier.fillMaxWidth(),
-                        placeholder   = { Text("Buscar por nombre o ciudad...", color = TextoSec, fontSize = 14.sp) },
+                        placeholder   = { Text("Buscar por nombre o especialidad...", color = TextoSec, fontSize = 14.sp) },
                         leadingIcon   = {
                             Icon(Icons.Default.Search, null, tint = Verde, modifier = Modifier.size(20.dp))
                         },
@@ -209,9 +211,7 @@ fun EquiposScreen(
                 }
             }
 
-
-
-            // ── Separador sección ─────────────────────────────────────────
+            // ── Separador ─────────────────────────────────────────────────
             item {
                 Row(
                     modifier          = Modifier
@@ -220,7 +220,7 @@ fun EquiposScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text          = "Equipos registrados  •  ${equipos.size} equipos",
+                        text          = "Cuerpo técnico  •  ${entrenadores.size} entrenadores",
                         color         = TextoSec,
                         fontSize      = 12.sp,
                         fontWeight    = FontWeight.Bold,
@@ -230,13 +230,11 @@ fun EquiposScreen(
                 }
             }
 
-            // ── Estado cargando ───────────────────────────────────────────
+            // ── Cargando ──────────────────────────────────────────────────
             if (cargando) {
                 item {
                     Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(300.dp),
+                        Modifier.fillMaxWidth().height(300.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = Verde)
@@ -244,13 +242,11 @@ fun EquiposScreen(
                 }
             }
 
-            // ── Estado vacío ──────────────────────────────────────────────
-            if (!cargando && equipos.isEmpty()) {
+            // ── Vacío ─────────────────────────────────────────────────────
+            if (!cargando && entrenadores.isEmpty()) {
                 item {
                     Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(280.dp),
+                        Modifier.fillMaxWidth().height(280.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -270,18 +266,18 @@ fun EquiposScreen(
                             Spacer(Modifier.height(16.dp))
                             Text("Sin resultados", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(4.dp))
-                            Text("Intenta con otro nombre o ciudad", color = TextoSec, fontSize = 13.sp)
+                            Text("Intenta con otro nombre o especialidad", color = TextoSec, fontSize = 13.sp)
                         }
                     }
                 }
             }
 
-            // ── Lista de equipos ──────────────────────────────────────────
+            // ── Lista ─────────────────────────────────────────────────────
             if (!cargando) {
-                items(equipos) { equipo ->
-                    EquipoCard(
-                        equipo  = equipo,
-                        onClick = { onDetalleClick(equipo) }
+                items(entrenadores) { entrenador ->
+                    EntrenadorCard(
+                        entrenador = entrenador,
+                        onClick    = { onDetalleClick(entrenador) }
                     )
                 }
             }
@@ -289,29 +285,16 @@ fun EquiposScreen(
     }
 }
 
-// ── Chip de ordenamiento ──────────────────────────────────────────────────
+// ── Tarjeta de entrenador ─────────────────────────────────────────────────
 @Composable
-fun OrdenChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg     = if (selected) Verde       else Superficie
-    val text   = if (selected) Color.White else TextoSec
-    val weight = if (selected) FontWeight.Bold else FontWeight.Normal
+fun EntrenadorCard(entrenador: Entrenador, onClick: () -> Unit) {
+    val color = colorEspecialidad(entrenador.especialidad)
 
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50.dp))
-            .background(bg)
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(label, color = text, fontSize = 13.sp, fontWeight = weight, maxLines = 1)
-    }
-}
-
-// ── Tarjeta de equipo ─────────────────────────────────────────────────────
-@Composable
-fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
-    val sdf          = remember { SimpleDateFormat("yyyy", Locale.getDefault()) }
-    val anioFundacion = sdf.format(equipo.fundacion)
+    val iniciales = entrenador.nombre
+        .split(" ")
+        .filter { it.isNotEmpty() }
+        .take(2)
+        .joinToString("") { it.first().uppercaseChar().toString() }
 
     Card(
         modifier  = Modifier
@@ -328,19 +311,16 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar con iniciales del equipo
+            // Avatar
             Box(
                 modifier         = Modifier
                     .size(52.dp)
-                    .background(Verde.copy(alpha = 0.18f), CircleShape),
+                    .background(color.copy(alpha = 0.15f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text       = equipo.nombre
-                        .split(" ")
-                        .take(2)
-                        .joinToString("") { it.first().uppercaseChar().toString() },
-                    color      = Verde,
+                    text       = iniciales,
+                    color      = color,
                     fontSize   = 15.sp,
                     fontWeight = FontWeight.Black
                 )
@@ -348,10 +328,10 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
 
             Spacer(Modifier.width(14.dp))
 
-            // Info central
+            // Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text       = equipo.nombre,
+                    text       = entrenador.nombre,
                     color      = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize   = 15.sp,
@@ -359,49 +339,32 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
                     overflow   = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(3.dp))
-                // Ciudad con pill
-                Row(
-                    verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                Box(
+                    modifier = Modifier
+                        .background(color.copy(alpha = 0.18f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 7.dp, vertical = 2.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint     = TextoSec,
-                        modifier = Modifier.size(13.dp)
-                    )
                     Text(
-                        text     = equipo.ciudad,
-                        color    = TextoSec,
-                        fontSize = 12.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        text       = entrenador.especialidad,
+                        color      = color,
+                        fontSize   = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines   = 1
                     )
                 }
                 Spacer(Modifier.height(3.dp))
-                // Año fundación
-                Row(
-                    verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector        = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint               = Verde,
-                        modifier           = Modifier.size(12.dp)
-                    )
-                    Text(
-                        text       = "Fundado en $anioFundacion",
-                        color      = Verde,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text       = entrenador.equipo.nombre,
+                    color      = Verde,
+                    fontSize   = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines   = 1,
+                    overflow   = TextOverflow.Ellipsis
+                )
             }
 
             Spacer(Modifier.width(10.dp))
 
-            // ID + flecha
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = null,
@@ -413,29 +376,30 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
 }
 
 // ── Preview ───────────────────────────────────────────────────────────────
-@Composable
 @Preview(showBackground = true, backgroundColor = 0xFF0D2B1C, showSystemUi = true)
-fun EquiposScreenPreview() {
+@Composable
+fun EntrenadoresScreenPreview() {
     val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-    val equiposFake = listOf(
-        Equipo(1L, "Millonarios FC",     "Bogotá",   formato.parse("1946-06-18")!!),
-        Equipo(2L, "Atlético Nacional",  "Medellín", formato.parse("1947-03-07")!!),
-        Equipo(3L, "América de Cali",    "Cali",     formato.parse("1927-02-13")!!),
-        Equipo(4L, "Deportivo Cali",     "Cali",     formato.parse("1912-07-28")!!),
-        Equipo(5L, "Junior FC",          "Barranquilla", formato.parse("1924-08-13")!!),
+    val equipoFake = Equipo(1L, "Millonarios FC", "Bogotá", formato.parse("1946-06-18")!!)
+
+    val entrenadoresFake = listOf(
+        Entrenador(1L, "Alberto Gamero",  "Táctico Ofensivo",  equipoFake),
+        Entrenador(2L, "Jorge Bermúdez",  "Defensivo",         equipoFake),
+        Entrenador(3L, "Luis Amaranto",   "Porteros",          equipoFake),
+        Entrenador(4L, "Carlos Paniagua", "Físico",            equipoFake),
     )
 
-    EquiposScreen(
-        equipos         = equiposFake,
-        searchQuery     = "",
-        cargando        = false,
-        mensaje         = null,
+    EntrenadoresScreen(
+        entrenadores     = entrenadoresFake,
+        searchQuery      = "",
+        cargando         = false,
+        mensaje          = null,
         onDismissMensaje = {},
-        onSearchChange  = {},
-        onBackClick     = {},
+        onSearchChange   = {},
+        onBackClick      = {},
         onRefrescarClick = {},
-        onAgregarClick  = {},
-        onDetalleClick  = {}
+        onAgregarClick   = {},
+        onDetalleClick   = {}
     )
 }

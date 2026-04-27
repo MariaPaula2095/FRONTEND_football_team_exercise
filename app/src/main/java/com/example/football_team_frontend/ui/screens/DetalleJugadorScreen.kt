@@ -24,26 +24,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.model.Equipo
 import com.example.football_team_frontend.model.Jugador
+import com.example.football_team_frontend.ui.components.MetricBox
+import com.example.football_team_frontend.ui.components.MetricBoxRow
 import com.example.football_team_frontend.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 // ── Paleta compartida con JugadoresScreen ──────────────────────────────────
-private val Superficie    = Color(0xFF1A3D2C)
-private val SuperficieAlt = Color(0xFF153224)
-private val FichaFondo    = Color(0xFF1F4A34)
-private val BorderSutil   = Color(0xFF2D6645)
-private val TextoSec      = Color(0xFF7FB99A)
 
 private fun colorPosicion(posicion: String): Color = when {
-    posicion.contains("Portero",       ignoreCase = true) -> Color(0xFFFFA726)
+    posicion.contains("Portero",       ignoreCase = true) -> WarningYellow
     posicion.contains("Defensa",       ignoreCase = true) ||
-            posicion.contains("Lateral",       ignoreCase = true) -> Color(0xFF42A5F5)
+            posicion.contains("Lateral",       ignoreCase = true) -> InfoBlue
     posicion.contains("Mediocampista", ignoreCase = true) ||
-            posicion.contains("Medio",         ignoreCase = true) -> Color(0xFFAB47BC)
-    posicion.contains("Extremo",       ignoreCase = true) -> Color(0xFF26C6DA)
-    posicion.contains("Delantero",     ignoreCase = true) -> Color(0xFFEF5350)
-    else                                                   -> Color(0xFF66BB6A)
+            posicion.contains("Medio",         ignoreCase = true) -> Verde
+    posicion.contains("Delantero",     ignoreCase = true) ||
+            posicion.contains("Extremo",       ignoreCase = true) -> ErrorRed
+    else                                                   -> Verde
 }
 
 private fun inicialPosicion(posicion: String): String = when {
@@ -99,7 +96,7 @@ fun DetalleJugadorScreen(
             containerColor   = FichaFondo,
             shape            = RoundedCornerShape(20.dp),
             title = {
-                Text("¿Eliminar jugador?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                Text("¿ELIMINAR JUGADOR?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
             },
             text = {
                 Text(
@@ -112,292 +109,194 @@ fun DetalleJugadorScreen(
                     jugador.idJugador?.let { onEliminarClick(it) }
                     mostrarDialogoEliminar = false
                 }) {
-                    Text("Eliminar", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold)
+                    Text("ELIMINAR", color = ErrorRed, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogoEliminar = false }) {
-                    Text("Cancelar", color = TextoSec)
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SuperficieAlt)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // ── HERO con degradado ────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(listOf(Color(0xFF0D2B1C), Color(0xFF163222)))
-                )
-                .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-        ) {
-            Column {
-                // Fila de navegación
-                Row(
-                    modifier          = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+    Scaffold(
+        containerColor = SuperficieAlt,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(
+                    onClick  = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
                 ) {
-                    // Atrás
-                    IconButton(
-                        onClick  = onBackClick,
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(Color.White.copy(alpha = 0.12f), CircleShape)
-                    ) {
-                        Icon(
-                            Icons.Default.ArrowBackIosNew,
-                            contentDescription = "Atrás",
-                            tint               = Color.White,
-                            modifier           = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Spacer(Modifier.weight(1f))
-
-
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Atrás",
+                        tint               = Color.White,
+                        modifier           = Modifier.size(18.dp)
+                    )
                 }
-
-                Spacer(Modifier.height(28.dp))
-
-                // Avatar + nombre en el hero
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                
+                Text(
+                    text = "DETALLE JUGADOR",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // ── HERO con degradado ────────────────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(listOf(FondoOscuro, SuperficieAlt))
+                    )
+                    .padding(horizontal = 20.dp, vertical = 30.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     // Avatar grande con iniciales de posición
                     Box(
                         modifier         = Modifier
-                            .size(80.dp)
+                            .size(100.dp)
                             .background(posColor.copy(alpha = 0.18f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             posInicial,
                             color      = posColor,
-                            fontSize   = 24.sp,
+                            fontSize   = 32.sp,
                             fontWeight = FontWeight.Black
                         )
                     }
 
-                    Spacer(Modifier.width(18.dp))
+                    Spacer(Modifier.height(20.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        jugador.nombre.uppercase(),
+                        color      = Color.White,
+                        fontSize   = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign  = TextAlign.Center,
+                        lineHeight = 28.sp
+                    )
+                    
+                    Spacer(Modifier.height(10.dp))
+
+                    // Pill de posición
+                    Box(
+                        modifier = Modifier
+                            .background(posColor.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                    ) {
                         Text(
-                            "Ficha técnica",
-                            color         = TextoSec,
-                            fontSize      = 12.sp,
-                            fontWeight    = FontWeight.SemiBold,
-                            letterSpacing = 0.8.sp
+                            jugador.posicion.uppercase(),
+                            color      = posColor,
+                            fontSize   = 12.sp,
+                            fontWeight = FontWeight.Black
                         )
-                        Text(
-                            jugador.nombre,
-                            color      = Color.White,
-                            fontSize   = 22.sp,
-                            fontWeight = FontWeight.Black,
-                            lineHeight = 26.sp,
-                            maxLines   = 2,
-                            overflow   = TextOverflow.Ellipsis
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        // Pill de posición con color
-                        Box(
-                            modifier = Modifier
-                                .background(posColor.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                jugador.posicion,
-                                color      = posColor,
-                                fontSize   = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
                     }
                 }
             }
-        }
 
-        // ── Cuerpo de la ficha ────────────────────────────────────────────
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            // Etiqueta de sección
-            Text(
-                "Información del jugador",
-                color         = TextoSec,
-                fontSize      = 12.sp,
-                fontWeight    = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
-
-            // Dorsal + Nacionalidad en fila
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // ── Cuerpo de la ficha ────────────────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                FichaInfoBox(
-                    modifier = Modifier.weight(1f),
-                    label    = "Dorsal",
-                    value    = "#${jugador.dorsal}",
-                    icon     = Icons.Default.Numbers,
-                    color    = Verde
-                )
-                FichaInfoBox(
-                    modifier = Modifier.weight(1f),
-                    label    = "Nacionalidad",
-                    value    = jugador.nacionalidad,
-                    icon     = Icons.Default.Public,
-                    color    = Color(0xFF42A5F5)
-                )
-            }
 
-            // Fecha de nacimiento
-            FichaInfoRow(
-                label = "Fecha de nacimiento",
-                value = jugador.fechaNac ?: "No registrada",
-                icon  = Icons.Default.CalendarToday,
-                color = Color(0xFFFFD600)
-            )
-
-            // Club actual
-            FichaInfoRow(
-                label = "Club actual",
-                value = equipo?.nombre ?: "Sin equipo",
-                icon  = Icons.Default.Shield,
-                color = Verde
-            )
-
-            // Ciudad del club (si existe)
-            if (!equipo?.ciudad.isNullOrBlank()) {
-                FichaInfoRow(
-                    label = "Ciudad",
-                    value = equipo!!.ciudad!!,
-                    icon  = Icons.Default.LocationOn,
-                    color = Color(0xFF26C6DA)
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            // Botones de acción al pie
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Editar
-                Button(
-                    onClick  = onEditarClick,
-                    modifier = Modifier.weight(1f),
-                    shape    = RoundedCornerShape(14.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = Verde)
-                ) {
-                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Editar", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
-                // Eliminar
-                OutlinedButton(
-                    onClick  = { mostrarDialogoEliminar = true },
-                    modifier = Modifier.weight(1f),
-                    shape    = RoundedCornerShape(14.dp),
-                    colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF5350)),
-                    border   = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF5350).copy(alpha = 0.5f))
-                ) {
-                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Eliminar", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
-            }
-        }
-    }
-}
-
-// ── Card cuadrada de info (dorsal / nacionalidad) ─────────────────────────
-@Composable
-fun FichaInfoBox(
-    modifier: Modifier,
-    label: String,
-    value: String,
-    icon: ImageVector,
-    color: Color
-) {
-    Card(
-        modifier = modifier,
-        shape    = RoundedCornerShape(18.dp),
-        colors   = CardDefaults.cardColors(containerColor = FichaFondo)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Box(
-                modifier         = Modifier
-                    .size(36.dp)
-                    .background(color.copy(alpha = 0.15f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, null, tint = color, modifier = Modifier.size(18.dp))
-            }
-            Spacer(Modifier.height(10.dp))
-            Text(label, color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                value,
-                color      = Color.White,
-                fontSize   = 20.sp,
-                fontWeight = FontWeight.Black,
-                maxLines   = 1,
-                overflow   = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-// ── Fila de info horizontal (club, fecha, ciudad) ─────────────────────────
-@Composable
-fun FichaInfoRow(
-    label: String,
-    value: String,
-    icon: ImageVector,
-    color: Color
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(16.dp),
-        colors   = CardDefaults.cardColors(containerColor = FichaFondo)
-    ) {
-        Row(
-            modifier          = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier         = Modifier
-                    .size(38.dp)
-                    .background(color.copy(alpha = 0.15f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, null, tint = color, modifier = Modifier.size(20.dp))
-            }
-            Spacer(Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(label, color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(2.dp))
                 Text(
-                    value,
-                    color      = Color.White,
-                    fontSize   = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines   = 1,
-                    overflow   = TextOverflow.Ellipsis
+                    "INFORMACIÓN TÉCNICA",
+                    color         = TextoSec,
+                    fontSize      = 12.sp,
+                    fontWeight    = FontWeight.Black,
+                    letterSpacing = 1.sp
                 )
+
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "DORSAL",
+                        value    = "#${jugador.dorsal}",
+                        icon     = Icons.Default.Numbers,
+                        color    = Verde
+                    )
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "NACIONALIDAD",
+                        value    = jugador.nacionalidad.uppercase(),
+                        icon     = Icons.Default.Public,
+                        color    = InfoBlue
+                    )
+                }
+
+                MetricBoxRow(
+                    label = "FECHA DE NACIMIENTO",
+                    value = jugador.fechaNac ?: "NO REGISTRADA",
+                    icon  = Icons.Default.CalendarToday,
+                    color = WarningYellow
+                )
+
+                MetricBoxRow(
+                    label = "CLUB ACTUAL",
+                    value = equipo?.nombre?.uppercase() ?: "SIN EQUIPO",
+                    icon  = Icons.Default.Shield,
+                    color = Verde
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // Botones de acción al pie
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick  = onEditarClick,
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = Verde)
+                    ) {
+                        Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("EDITAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                    Button(
+                        onClick  = { mostrarDialogoEliminar = true },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = ErrorRed)
+                    ) {
+                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("ELIMINAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                }
+                
+                Spacer(Modifier.height(40.dp))
             }
         }
     }

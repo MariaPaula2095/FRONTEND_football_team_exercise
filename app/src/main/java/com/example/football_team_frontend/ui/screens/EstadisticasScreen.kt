@@ -1,6 +1,7 @@
 package com.example.football_team_frontend.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,6 +26,7 @@ import com.example.football_team_frontend.model.EstadisticasJugadorDto
 import com.example.football_team_frontend.model.Jugador
 import com.example.football_team_frontend.model.ResultadoPartido
 import com.example.football_team_frontend.ui.theme.*
+import kotlinx.coroutines.delay
 
 // Colores de stats definidos una sola vez para consistencia
 private val ColorGoles      = Color(0xFF66BB6A)
@@ -40,15 +42,16 @@ private val StatColWidth = 38.dp
 fun EstadisticasScreen(
     estadisticas: List<EstadisticasJugadorDto>,
     partidos: List<ResultadoPartido>,
-    jugadoresConMasGoles: List<Jugador>,          // ← nuevo
-    onBuscarPorGoles: (Int) -> Unit,              // ← nuevo
+    jugadoresConMasGoles: List<Jugador>,
+    onBuscarPorGoles: (Int) -> Unit,
     cargando: Boolean,
     mensaje: String?,
     onDismissMensaje: () -> Unit,
     onBackClick: () -> Unit,
     onRefrescarClick: () -> Unit,
     onAgregarClick: () -> Unit,
-    onDetalleClick: (EstadisticasJugadorDto) -> Unit
+    onDetalleClick: (EstadisticasJugadorDto) -> Unit,
+    onLimpiarBusqueda: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showLegend by remember { mutableStateOf(false) }
@@ -64,12 +67,12 @@ fun EstadisticasScreen(
     if (showLegend) {
         AlertDialog(
             onDismissRequest = { showLegend = false },
-            containerColor = CardColor,
+            containerColor = FichaFondo,
             shape = RoundedCornerShape(20.dp),
             title = {
                 Text(
-                    "Glosario de estadísticas",
-                    color = Verde,
+                    "GLOSARIO DE ESTADÍSTICAS",
+                    color = Blanco,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Black
                 )
@@ -85,81 +88,68 @@ fun EstadisticasScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showLegend = false }) {
-                    Text("Entendido", color = Verde, fontWeight = FontWeight.Bold)
+                    Text("ENTENDIDO", color = Verde, fontWeight = FontWeight.Black)
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = VerdeOscuro,
+        containerColor = SuperficieAlt,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            // ── Top bar: atrás | título | info + refresh ──
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(FondoOscuro)
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
-                // Botón atrás — fondo blanco semitransparente para visibilidad
                 IconButton(
-                    onClick = onBackClick,
+                    onClick  = onBackClick,
                     modifier = Modifier
-                        .size(44.dp)
-                        .background(Color.White.copy(alpha = 0.18f), CircleShape)
+                        .size(40.dp)
+                        .background(Blanco.copy(alpha = 0.12f), CircleShape)
                 ) {
                     Icon(
                         Icons.Default.ArrowBackIosNew,
                         contentDescription = "Atrás",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
+                        tint               = Blanco,
+                        modifier           = Modifier.size(18.dp)
                     )
                 }
-
-                // Título centrado
+                
                 Text(
-                    text = "Estadísticas",
-                    modifier = Modifier.weight(1f),
+                    text = "ESTADÍSTICAS",
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    color = Color.White,
-                    fontSize = 18.sp,
+                    color = Blanco,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Black,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    letterSpacing = 1.sp
                 )
 
-                // Botón info
-                IconButton(
-                    onClick = { showLegend = true },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(Color.White.copy(alpha = 0.18f), CircleShape)
-                ) {
-                    Icon(
-                        Icons.Outlined.Info,
-                        contentDescription = "Glosario",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Botón refrescar — fondo verde visible
-                IconButton(
-                    onClick = onRefrescarClick,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(Verde.copy(alpha = 0.30f), CircleShape)
-                ) {
-                    Icon(
-                        Icons.Default.Refresh,
-                        contentDescription = "Refrescar",
-                        tint = Verde,
-                        modifier = Modifier.size(22.dp)
-                    )
+                Row(modifier = Modifier.align(Alignment.CenterEnd), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(
+                        onClick = { showLegend = true },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Blanco.copy(alpha = 0.12f), CircleShape)
+                    ) {
+                        Icon(Icons.Outlined.Info, contentDescription = "Glosario", tint = Blanco, modifier = Modifier.size(20.dp))
+                    }
+                    IconButton(
+                        onClick  = {
+                            onLimpiarBusqueda()
+                            onRefrescarClick()
+                        },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Blanco.copy(alpha = 0.12f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refrescar", tint = Verde, modifier = Modifier.size(20.dp))
+                    }
                 }
             }
         },
@@ -167,10 +157,10 @@ fun EstadisticasScreen(
             ExtendedFloatingActionButton(
                 onClick = onAgregarClick,
                 containerColor = Verde,
-                contentColor = Color.White,
-                shape = RoundedCornerShape(50.dp),
-                icon = { Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(22.dp)) },
-                text = { Text("Agregar estadística", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+                contentColor = Blanco,
+                shape = RoundedCornerShape(16.dp),
+                icon = { Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                text = { Text("AGREGAR", fontWeight = FontWeight.Black, fontSize = 14.sp) }
             )
         }
     ) { padding ->
@@ -178,14 +168,14 @@ fun EstadisticasScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // ── Cards de resumen ──
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatSummaryCard(
                     title = "Goleador",
@@ -202,122 +192,176 @@ fun EstadisticasScreen(
             }
 
             // ── Buscador por goles ────────────────────────────────────────────
+            var expandedSearch by remember { mutableStateOf(false) }
             var minGoles by remember { mutableStateOf("") }
+            var mostrarMensajeVacio by remember { mutableStateOf(false) }
+            var ultimoBuscado by remember { mutableStateOf("") }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape    = RoundedCornerShape(16.dp),
-                colors   = CardDefaults.cardColors(containerColor = Color(0xFF244A34))
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(
-                        "🏆 Jugadores por mínimo de goles",
-                        color      = Verde,
-                        fontSize   = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Row(
-                        verticalAlignment     = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value         = minGoles,
-                            onValueChange = { if (it.length <= 3) minGoles = it },
-                            modifier      = Modifier.weight(1f),
-                            placeholder   = { Text("Mín. goles", color = Color(0xFF7FB99A), fontSize = 13.sp) },
-                            singleLine    = true,
-                            shape         = RoundedCornerShape(12.dp),
-                            colors        = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor   = Color(0xFF1F4A34),
-                                unfocusedContainerColor = Color(0xFF1F4A34),
-                                focusedBorderColor      = Verde,
-                                unfocusedBorderColor    = Color(0xFF2D6645),
-                                focusedTextColor        = Color.White,
-                                unfocusedTextColor      = Color.White,
-                                cursorColor             = Verde
-                            )
-                        )
-                        Button(
-                            onClick = { minGoles.toIntOrNull()?.let { onBuscarPorGoles(it) } },
-                            shape   = RoundedCornerShape(12.dp),
-                            colors  = ButtonDefaults.buttonColors(containerColor = Verde)
-                        ) {
-                            Text("Buscar", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                        }
-                    }
-                    if (jugadoresConMasGoles.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        jugadoresConMasGoles.forEach { jugador ->
-                            Row(
-                                modifier          = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Box(
-                                    modifier         = Modifier
-                                        .size(32.dp)
-                                        .background(Verde.copy(alpha = 0.18f), CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        jugador.nombre.split(" ").filter { it.isNotEmpty() }
-                                            .take(2).joinToString("") { it.first().uppercaseChar().toString() },
-                                        color      = Verde,
-                                        fontSize   = 11.sp,
-                                        fontWeight = FontWeight.Black
-                                    )
-                                }
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(jugador.nombre, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                                    Text(jugador.posicion, color = Color(0xFF7FB99A), fontSize = 11.sp)
-                                }
-                            }
-                            HorizontalDivider(color = Color(0xFF1F4A34), thickness = 1.dp)
-                        }
-                    }
+            LaunchedEffect(jugadoresConMasGoles) {
+                if (ultimoBuscado.isNotEmpty() && jugadoresConMasGoles.isEmpty()) {
+                    mostrarMensajeVacio = true
+                    delay(3000)
+                    mostrarMensajeVacio = false
+                } else {
+                    mostrarMensajeVacio = false
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ── Encabezado de tabla con ⓘ integrado al lado de las etiquetas ──
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape    = RoundedCornerShape(16.dp),
+                colors   = CardDefaults.cardColors(containerColor = FichaFondo)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable { expandedSearch = !expandedSearch },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "🏆 FILTRAR POR MÍNIMO DE GOLES",
+                            color      = TextoSec,
+                            fontSize   = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 0.5.sp
+                        )
+                        Icon(
+                            if (expandedSearch) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = TextoSec
+                        )
+                    }
+
+                    if (expandedSearch) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            verticalAlignment     = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            OutlinedTextField(
+                                value         = minGoles,
+                                onValueChange = { 
+                                    if (it.length <= 3) {
+                                        minGoles = it
+                                        // Si borra el texto, limpiamos los resultados previos
+                                        if (it.isEmpty()) {
+                                            onLimpiarBusqueda()
+                                            ultimoBuscado = ""
+                                        }
+                                    }
+                                },
+                                modifier      = Modifier.weight(1f),
+                                placeholder   = { Text("Ej: 5", color = TextoSec.copy(0.6f), fontSize = 13.sp) },
+                                singleLine    = true,
+                                shape         = RoundedCornerShape(12.dp),
+                                colors        = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor   = Superficie.copy(0.5f),
+                                    unfocusedContainerColor = Superficie.copy(0.5f),
+                                    focusedBorderColor      = Verde,
+                                    unfocusedBorderColor    = BorderSutil,
+                                    focusedTextColor        = Blanco,
+                                    unfocusedTextColor      = Blanco,
+                                    cursorColor             = Verde
+                                )
+                            )
+                            Button(
+                                onClick = { 
+                                    val goles = minGoles.toIntOrNull()
+                                    if (goles != null) {
+                                        ultimoBuscado = minGoles
+                                        onBuscarPorGoles(goles) 
+                                    }
+                                },
+                                modifier = Modifier.height(52.dp),
+                                shape   = RoundedCornerShape(12.dp),
+                                colors  = ButtonDefaults.buttonColors(containerColor = Verde)
+                            ) {
+                                Text("BUSCAR", fontWeight = FontWeight.Black, fontSize = 13.sp)
+                            }
+                        }
+                        
+                        if (mostrarMensajeVacio) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "No hay ningún jugador que haya hecho más de $ultimoBuscado goles.",
+                                color = ErrorRed,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        if (jugadoresConMasGoles.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            jugadoresConMasGoles.forEach { jugador ->
+                                Row(
+                                    modifier          = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Box(
+                                        modifier         = Modifier
+                                            .size(36.dp)
+                                            .background(Verde.copy(alpha = 0.18f), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            jugador.nombre.split(" ").filter { it.isNotEmpty() }
+                                                .take(2).joinToString("") { it.first().uppercaseChar().toString() },
+                                            color      = Verde,
+                                            fontSize   = 12.sp,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(jugador.nombre.uppercase(), color = Blanco, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                                        Text(jugador.posicion.uppercase(), color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                                HorizontalDivider(color = BorderSutil.copy(0.3f), thickness = 1.dp)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ── Encabezado de tabla ──
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    .background(Color(0xFF163222))   // fondo más oscuro = contraste con las filas
-                    .padding(horizontal = 14.dp, vertical = 11.dp),
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .background(FondoOscuro)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Jugador",
-                    color = Color(0xFF78909C),
+                    "JUGADOR",
+                    color = TextoSec,
                     fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f)
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.weight(1f),
+                    letterSpacing = 0.5.sp
                 )
 
-                // Etiquetas de stat + ⓘ pegado al final
                 StatHeaderCol("G",   ColorGoles)
                 StatHeaderCol("A",   ColorAsistencia)
                 StatHeaderCol("TA",  ColorAmarilla)
                 StatHeaderCol("TR",  ColorRoja)
                 StatHeaderCol("MIN", ColorMinutos)
 
-                // ⓘ justo al lado de las etiquetas
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
                     Icons.Outlined.Info,
-                    contentDescription = "Ver glosario",
-                    tint = Color(0xFF78909C),
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clip(CircleShape)
+                    contentDescription = null,
+                    tint = TextoSec,
+                    modifier = Modifier.size(14.dp)
                 )
             }
 
@@ -334,14 +378,15 @@ fun EstadisticasScreen(
                             Icon(
                                 Icons.Default.SportsScore,
                                 contentDescription = null,
-                                tint = Color(0xFF78909C),
+                                tint = TextoSec,
                                 modifier = Modifier.size(52.dp)
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                "Sin estadísticas registradas",
-                                color = Color(0xFF78909C),
-                                fontSize = 14.sp
+                                "SIN ESTADÍSTICAS REGISTRADAS",
+                                color = TextoSec,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black
                             )
                         }
                     }
@@ -349,7 +394,7 @@ fun EstadisticasScreen(
                 else -> {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 96.dp)
+                        contentPadding = PaddingValues(bottom = 100.dp)
                     ) {
                         items(estadisticas.withIndex().toList()) { (index, estadistica) ->
                             val partido = partidos.find { it.idPartido == estadistica.idPartido }
@@ -362,9 +407,7 @@ fun EstadisticasScreen(
                         }
                     }
                 }
-
             }
-            AppFooter()
         }
     }
 }
@@ -413,7 +456,7 @@ fun EstadisticaRow(
                 // Nombre del jugador
                 Text(
                     stat.nombreJugador?.uppercase() ?: "JUGADOR",
-                    color      = Color.White,
+                    color      = Blanco,
                     fontWeight = FontWeight.Black,
                     fontSize   = 13.sp,
                     maxLines   = 1,
@@ -432,14 +475,14 @@ fun EstadisticaRow(
                     // Fecha en su propia línea
                     Text(
                         partido.fecha,
-                        color    = Color(0xFF78909C),
+                        color    = GrisClaro,
                         fontSize = 10.sp,
                         maxLines = 1
                     )
                 } else {
                     Text(
                         "Partido #${stat.idPartido}",
-                        color    = Color(0xFF78909C),
+                        color    = GrisClaro,
                         fontSize = 10.sp
                     )
                 }
@@ -502,13 +545,13 @@ fun StatSummaryCard(
             Column {
                 Text(
                     title.uppercase(),
-                    color      = Color(0xFF78909C),
+                    color      = GrisClaro,
                     fontSize   = 9.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     value,
-                    color      = Color.White,
+                    color      = Blanco,
                     fontSize   = 13.sp,
                     fontWeight = FontWeight.Black,
                     maxLines   = 1,
@@ -532,7 +575,7 @@ fun LegendItem(label: String, description: String, color: Color) {
             Text(label, color = color, fontSize = 11.sp, fontWeight = FontWeight.Black)
         }
         Spacer(modifier = Modifier.width(14.dp))
-        Text(description, color = Color.White, fontSize = 13.sp)
+        Text(description, color = Blanco, fontSize = 13.sp)
     }
 }
 
@@ -554,8 +597,8 @@ fun EstadisticasprincipalPreview() {
     EstadisticasScreen(
         estadisticas     = estadisticasFake,
         partidos         = partidosFake,
-        jugadoresConMasGoles = emptyList(),   // ← nuevo
-        onBuscarPorGoles     = {},            // ← nuevo
+        jugadoresConMasGoles = emptyList(),
+        onBuscarPorGoles     = {},
         cargando         = false,
         mensaje          = null,
         onDismissMensaje = {},

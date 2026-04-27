@@ -15,10 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.model.Equipo
+import com.example.football_team_frontend.ui.components.FormTextField
 import com.example.football_team_frontend.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,7 +42,7 @@ fun FormularioEquipoScreen(
 
     fun validar() {
         if (nombre.isBlank() || ciudad.isBlank() || fechaFundacion.isBlank()) {
-            errorTexto = "Por favor, completa todos los campos obligatorios."
+            errorTexto = "POR FAVOR, COMPLETA TODOS LOS CAMPOS."
             return
         }
         errorTexto = null
@@ -52,14 +53,19 @@ fun FormularioEquipoScreen(
     if (mostrarConfirmacion) {
         AlertDialog(
             onDismissRequest  = { mostrarConfirmacion = false },
-            containerColor    = Color(0xFF1F4A43),
-            titleContentColor = Blanco,
-            textContentColor  = GrisClaro,
-            title = { Text("¿Guardar cambios?", fontWeight = FontWeight.Bold) },
-            text  = { Text("Se guardará la información de $nombre en la base de datos.") },
+            containerColor    = FichaFondo,
+            shape            = RoundedCornerShape(20.dp),
+            title = {
+                Text("¿GUARDAR CAMBIOS?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            },
+            text  = {
+                Text(
+                    "Se guardará la información de $nombre en la base de datos.",
+                    color = TextoSec, fontSize = 14.sp
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
-
                     val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                     formatter.timeZone = TimeZone.getTimeZone("UTC")
                     val fechaDate = formatter.parse(fechaFundacion) ?: Date()
@@ -74,12 +80,12 @@ fun FormularioEquipoScreen(
                     )
                     mostrarConfirmacion = false
                 }) {
-                    Text("Aceptar", color = Verde)
+                    Text("ACEPTAR", color = Verde, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarConfirmacion = false }) {
-                    Text("Cancelar", color = GrisClaro)
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
@@ -99,12 +105,12 @@ fun FormularioEquipoScreen(
                     }
                     mostrarDatePicker = false
                 }) {
-                    Text("Aceptar", color = Verde)
+                    Text("ACEPTAR", color = Verde, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDatePicker = false }) {
-                    Text("Cancelar", color = GrisClaro)
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         ) {
@@ -112,48 +118,60 @@ fun FormularioEquipoScreen(
         }
     }
 
-    // ── Contenido principal ───────────────────────────────────────────────
-    Box(modifier = Modifier.fillMaxSize().background(VerdeOscuro)) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Cabecera
-            Row(verticalAlignment = Alignment.CenterVertically) {
+    Scaffold(
+        containerColor = SuperficieAlt,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
                 IconButton(
                     onClick  = onBackClick,
                     modifier = Modifier
-                        .background(Color(0xFF1F4A43), CircleShape)
-                        .size(36.dp)
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
                 ) {
                     Icon(
                         Icons.Default.ArrowBackIosNew,
-                        contentDescription = null,
-                        tint     = Blanco,
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = "Atrás",
+                        tint               = Color.White,
+                        modifier           = Modifier.size(18.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                
                 Text(
-                    text       = if (equipo == null) "Nuevo Equipo" else "Editar Equipo",
-                    color      = Blanco,
-                    fontSize   = 22.sp,
-                    fontWeight = FontWeight.Bold
+                    text = if (equipo == null) "NUEVO EQUIPO" else "EDITAR EQUIPO",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
                 )
             }
-
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Avatar con iniciales (reemplaza la foto de jugador)
+            // Avatar dinámico
             Box(
                 modifier         = Modifier
-                    .size(110.dp)
+                    .size(100.dp)
                     .align(Alignment.CenterHorizontally)
-                    .background(Color(0xFF1F4A43), CircleShape),
+                    .background(Verde.copy(alpha = 0.1f), CircleShape)
+                    .padding(4.dp)
+                    .background(Verde.copy(alpha = 0.05f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -163,26 +181,35 @@ fun FormularioEquipoScreen(
                         .take(2)
                         .joinToString("") { it.first().uppercaseChar().toString() },
                     color      = Verde,
-                    fontSize   = 32.sp,
+                    fontSize   = 36.sp,
                     fontWeight = FontWeight.Black
                 )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
-            // Error
+            Text(
+                "INFORMACIÓN BÁSICA",
+                color = TextoSec,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
             if (errorTexto != null) {
                 Text(
                     errorTexto!!,
-                    color    = Color(0xFFFF6B6B),
-                    fontSize = 13.sp,
+                    color    = ErrorRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
 
-            // ── Nombre ────────────────────────────────────────────────────
+            // ── Campos de entrada ─────────────────────────────────────────
             FormTextField(
-                label         = "Nombre del Equipo",
+                label         = "NOMBRE DEL EQUIPO",
                 value         = nombre,
                 onValueChange = { nombre = it },
                 icon          = Icons.Default.Shield
@@ -190,9 +217,8 @@ fun FormularioEquipoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Ciudad ────────────────────────────────────────────────────
             FormTextField(
-                label         = "Ciudad",
+                label         = "CIUDAD SEDE",
                 value         = ciudad,
                 onValueChange = { ciudad = it },
                 icon          = Icons.Default.LocationOn
@@ -200,81 +226,56 @@ fun FormularioEquipoScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Fecha de Fundación ────────────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { mostrarDatePicker = true }
-            ) {
+            // Selector de fecha
+            Box(modifier = Modifier.fillMaxWidth().clickable { mostrarDatePicker = true }) {
                 OutlinedTextField(
                     value         = fechaFundacion,
                     onValueChange = {},
                     readOnly      = true,
                     enabled       = false,
-                    label         = { Text("Fecha de Fundación", color = GrisClaro) },
-                    leadingIcon   = {
-                        Icon(Icons.Default.CalendarToday, contentDescription = null, tint = Verde)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape    = RoundedCornerShape(18.dp),
-                    colors   = OutlinedTextFieldDefaults.colors(
-                        disabledContainerColor = Color(0xFF1F4A43),
+                    label         = { Text("FECHA DE FUNDACIÓN", fontSize = 10.sp, fontWeight = FontWeight.Black) },
+                    leadingIcon   = { Icon(Icons.Default.CalendarToday, null, tint = Verde, modifier = Modifier.size(20.dp)) },
+                    modifier      = Modifier.fillMaxWidth(),
+                    shape         = RoundedCornerShape(16.dp),
+                    colors        = OutlinedTextFieldDefaults.colors(
+                        disabledContainerColor = FichaFondo,
                         disabledBorderColor    = Color.Transparent,
-                        disabledTextColor      = Blanco,
-                        disabledLabelColor     = GrisClaro,
-                        focusedContainerColor  = Color(0xFF1F4A43),
-                        unfocusedContainerColor= Color(0xFF1F4A43),
+                        disabledTextColor      = Color.White,
+                        disabledLabelColor     = TextoSec,
                         focusedBorderColor     = Verde,
                         unfocusedBorderColor   = Color.Transparent
                     )
                 )
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            // ── Botón guardar ─────────────────────────────────────────────
+            // Botón de acción principal
             Button(
                 onClick  = { validar() },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape    = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape    = RoundedCornerShape(14.dp),
                 colors   = ButtonDefaults.buttonColors(containerColor = Verde)
             ) {
+                Icon(if(equipo==null) Icons.Default.Add else Icons.Default.Save, null)
+                Spacer(Modifier.width(8.dp))
                 Text(
                     text       = if (equipo == null) "GUARDAR EQUIPO" else "ACTUALIZAR EQUIPO",
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 16.sp,
-                    color      = Blanco
+                    fontWeight = FontWeight.Black,
+                    fontSize   = 15.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             TextButton(
                 onClick  = onBackClick,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Descartar cambios", color = GrisClaro)
+                Text("CANCELAR", color = TextoSec, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
-}
-
-// ── Preview ───────────────────────────────────────────────────────────────
-@Preview(showBackground = true, backgroundColor = 0xFF0D2B1C, showSystemUi = true)
-@Composable
-fun FormularioEquipoPreview() {
-    val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val equipoFake = Equipo(
-        idEquipo  = 1L,
-        nombre    = "Millonarios FC",
-        ciudad    = "Bogotá",
-        fundacion = formato.parse("1946-06-18")!!
-    )
-    FormularioEquipoScreen(
-        equipo         = equipoFake,
-        onBackClick    = {},
-        onGuardarClick = {}
-    )
 }

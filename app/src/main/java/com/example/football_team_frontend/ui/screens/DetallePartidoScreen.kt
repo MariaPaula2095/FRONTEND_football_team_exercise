@@ -28,7 +28,6 @@ import com.example.football_team_frontend.model.Jugador
 import com.example.football_team_frontend.model.ResultadoPartido
 import com.example.football_team_frontend.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetallePartidoScreen(
     resultado: ResultadoPartido?,
@@ -41,92 +40,97 @@ fun DetallePartidoScreen(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
-    val VerdeFondo = VerdeOscuro
-    val VerdeCard = CardColor
-    val GrisTexto = GrisClaro
-
+    // ── Estado vacío ──────────────────────────────────────────────────────
     if (resultado == null) {
-        Box(modifier = Modifier.fillMaxSize().background(VerdeFondo), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = Verde)
+        Box(
+            modifier         = Modifier.fillMaxSize().background(SuperficieAlt),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier         = Modifier
+                        .size(72.dp)
+                        .background(Superficie, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.SportsSoccer, null, tint = TextoSec, modifier = Modifier.size(36.dp))
+                }
+                Spacer(Modifier.height(16.dp))
+                Text("PARTIDO NO ENCONTRADO", color = Blanco, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                Text("No hay información disponible", color = TextoSec, fontSize = 13.sp)
+            }
         }
         return
     }
 
-    var expandedMenu by remember { mutableStateOf(false) }
-    var mostrarConfirmacionEliminar by remember { mutableStateOf(false) }
+    var mostrarDialogoEliminar by remember { mutableStateOf(false) }
 
-    if (mostrarConfirmacionEliminar) {
+    // ── Diálogo confirmar eliminación ─────────────────────────────────────
+    if (mostrarDialogoEliminar) {
         AlertDialog(
-            onDismissRequest = { mostrarConfirmacionEliminar = false },
-            containerColor = VerdeCard,
-            titleContentColor = Blanco,
-            textContentColor = GrisClaro,
-            title = { Text("¿Eliminar partido?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción no se puede deshacer. Se borrará el registro del encuentro entre ${resultado.equipoLocal} y ${resultado.equipoVisitante}.") },
+            onDismissRequest = { mostrarDialogoEliminar = false },
+            containerColor   = FichaFondo,
+            shape            = RoundedCornerShape(20.dp),
+            title = {
+                Text("¿ELIMINAR PARTIDO?", color = Blanco, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            },
+            text = {
+                Text(
+                    "Se eliminará el registro del encuentro entre ${resultado.equipoLocal} y ${resultado.equipoVisitante}. Esta acción no se puede deshacer.",
+                    color = TextoSec, fontSize = 14.sp
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     resultado.idPartido?.let { onEliminarClick(it) }
-                    mostrarConfirmacionEliminar = false
+                    mostrarDialogoEliminar = false
                 }) {
-                    Text("ELIMINAR", color = Color(0xFFFF4D4D), fontWeight = FontWeight.Bold)
+                    Text("ELIMINAR", color = ErrorRed, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { mostrarConfirmacionEliminar = false }) {
-                    Text("CANCELAR", color = GrisClaro)
+                TextButton(onClick = { mostrarDialogoEliminar = false }) {
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = VerdeFondo,
+        containerColor = SuperficieAlt,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("DETALLES DEL ENCUENTRO", color = Blanco, fontWeight = FontWeight.Black, fontSize = 14.sp) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.background(VerdeCard.copy(0.5f), CircleShape).size(36.dp)
-                    ) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = null, tint = Blanco, modifier = Modifier.size(16.dp))
-                    }
-                },
-                actions = {
-                    Box {
-                        IconButton(
-                            onClick = { expandedMenu = true },
-                            modifier = Modifier.background(VerdeCard.copy(0.5f), CircleShape).size(36.dp)
-                        ) {
-                            Icon(Icons.Default.MoreVert, contentDescription = null, tint = Blanco)
-                        }
-                        DropdownMenu(
-                            expanded = expandedMenu,
-                            onDismissRequest = { expandedMenu = false },
-                            modifier = Modifier.background(VerdeCard)
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Editar Encuentro", color = Blanco) },
-                                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null, tint = Verde) },
-                                onClick = {
-                                    expandedMenu = false
-                                    resultado.idPartido?.let { onEditarClick(it) }
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Eliminar Encuentro", color = Color(0xFFFF4D4D)) },
-                                leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFFF4D4D)) },
-                                onClick = {
-                                    expandedMenu = false
-                                    mostrarConfirmacionEliminar = true
-                                }
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = VerdeFondo)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(
+                    onClick  = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Blanco.copy(alpha = 0.12f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Atrás",
+                        tint               = Blanco,
+                        modifier           = Modifier.size(18.dp)
+                    )
+                }
+                
+                Text(
+                    text = "RESUMEN DEL ENCUENTRO",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Blanco,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+            }
         }
     ) { padding ->
         Column(
@@ -134,216 +138,220 @@ fun DetallePartidoScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 20.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Card Principal de Marcador
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = VerdeCard)
+            // ── Hero Section (Marcador) ───────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(listOf(FondoOscuro, SuperficieAlt))
+                    )
+                    .padding(horizontal = 20.dp, vertical = 30.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Surface(
-                        color = Verde.copy(0.2f),
-                        shape = RoundedCornerShape(8.dp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier
+                            .background(Verde.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            resultado.fecha.uppercase(), 
-                            color = Verde, 
-                            fontWeight = FontWeight.Black, 
-                            fontSize = 11.sp,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                            resultado.fecha.uppercase(),
+                            color      = Verde,
+                            fontSize   = 11.sp,
+                            fontWeight = FontWeight.Black
                         )
                     }
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
+
+                    Spacer(Modifier.height(24.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        TeamDetailCol(resultado.equipoLocal, equipos, Modifier.weight(1f))
+                        TeamHeroCol(resultado.equipoLocal, Modifier.weight(1f))
                         
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(resultado.golesLocal.toString(), color = Blanco, fontSize = 48.sp, fontWeight = FontWeight.Black)
-                                Text("-", color = Verde, fontSize = 36.sp, modifier = Modifier.padding(horizontal = 12.dp))
-                                Text(resultado.golesVisitante.toString(), color = Blanco, fontSize = 48.sp, fontWeight = FontWeight.Black)
+                                Text(resultado.golesLocal.toString(), color = Blanco, fontSize = 44.sp, fontWeight = FontWeight.Black)
+                                Text(" - ", color = Verde, fontSize = 32.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 8.dp))
+                                Text(resultado.golesVisitante.toString(), color = Blanco, fontSize = 44.sp, fontWeight = FontWeight.Black)
                             }
-                            Text("FINALIZADO", color = Verde, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                            Text("FINALIZADO", color = Verde, fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
                         }
 
-                        TeamDetailCol(resultado.equipoVisitante, equipos, Modifier.weight(1f))
+                        TeamHeroCol(resultado.equipoVisitante, Modifier.weight(1f))
                     }
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    // Ubicación
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color.Black.copy(0.2f))
-                            .clickable {
-                                val gmmIntentUri = Uri.parse("geo:0,0?q=${resultado.estadio}")
-                                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-                                mapIntent.setPackage("com.google.android.apps.maps")
-                                context.startActivity(mapIntent)
-                            }
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+
+                    Spacer(Modifier.height(24.dp))
+
+                    // Ubicación / Estadio
+                    Surface(
+                        onClick = {
+                            val gmmIntentUri = Uri.parse("geo:0,0?q=${resultado.estadio}")
+                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                            mapIntent.setPackage("com.google.android.apps.maps")
+                            context.startActivity(mapIntent)
+                        },
+                        color = Negro.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(0.9f)
                     ) {
-                        Box(modifier = Modifier.size(32.dp).background(Verde.copy(0.1f), CircleShape), contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = Verde, modifier = Modifier.size(16.dp))
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.LocationOn, null, tint = Verde, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                resultado.estadio.uppercase(),
+                                color = Blanco,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(Icons.AutoMirrored.Filled.OpenInNew, null, tint = TextoSec, modifier = Modifier.size(14.dp))
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(resultado.estadio.uppercase(), color = Blanco, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.weight(1f))
-                        Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, tint = GrisTexto, modifier = Modifier.size(14.dp))
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Espaciador para evitar que la franja verde se vea pegada
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Secciones de Plantilla
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Groups, contentDescription = null, tint = Verde, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("ALINEACIONES", color = Blanco, fontSize = 16.sp, fontWeight = FontWeight.Black)
+            // ── Cuerpo: Alineaciones y Acciones ───────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Título Alineaciones
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Groups, null, tint = Verde, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        "PLANTILLAS DEL ENCUENTRO",
+                        color = Blanco,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+
+                // Listas de jugadores
+                AlineacionCard(resultado.equipoLocal, equipos, jugadores, isLocal = true)
+                AlineacionCard(resultado.equipoVisitante, equipos, jugadores, isLocal = false)
+
+                Spacer(Modifier.height(8.dp))
+
+                // Botones de acción
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick  = { resultado.idPartido?.let { onEditarClick(it) } },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = Verde)
+                    ) {
+                        Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("EDITAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                    Button(
+                        onClick  = { mostrarDialogoEliminar = true },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = ErrorRed)
+                    ) {
+                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("ELIMINAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                }
+                
+                Spacer(Modifier.height(40.dp))
             }
-            Text("Detalles de los jugadores convocados", color = GrisTexto, fontSize = 11.sp)
-            
-            Spacer(modifier = Modifier.height(20.dp))
-
-            PlayerListPremium(resultado.equipoLocal, equipos, jugadores, isLocal = true, VerdeCard)
-            Spacer(modifier = Modifier.height(16.dp))
-            PlayerListPremium(resultado.equipoVisitante, equipos, jugadores, isLocal = false, VerdeCard)
-
-            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
 
 @Composable
-fun PlayerListPremium(nombreEquipo: String, equipos: List<Equipo>, jugadores: List<Jugador>, isLocal: Boolean, verdeCard: Color) {
+fun TeamHeroCol(nombre: String, modifier: Modifier) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(Negro.copy(0.2f), CircleShape)
+                .padding(2.dp)
+                .background(Verde.copy(0.1f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Shield, null, tint = Verde, modifier = Modifier.size(32.dp))
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(
+            nombre.uppercase(),
+            color = Blanco,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            textAlign = TextAlign.Center,
+            maxLines = 2
+        )
+    }
+}
+
+@Composable
+fun AlineacionCard(nombreEquipo: String, equipos: List<Equipo>, jugadores: List<Jugador>, isLocal: Boolean) {
     val equipoObj = equipos.find { it.nombre.equals(nombreEquipo, ignoreCase = true) }
     val plantilla = if (equipoObj != null) jugadores.filter { it.idEquipo == equipoObj.idEquipo } else emptyList()
+    val colorAccent = if (isLocal) Verde else WarningYellow
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = verdeCard)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = FichaFondo)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(12.dp).background(if(isLocal) Verde else Color(0xFFFFD700), CircleShape))
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(nombreEquipo.uppercase(), color = Blanco, fontWeight = FontWeight.Black, fontSize = 14.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                Surface(color = Color.Black.copy(0.2f), shape = CircleShape) {
-                    Text(
-                        "${plantilla.size} JUGADORES", 
-                        color = Verde, 
-                        fontSize = 9.sp, 
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
+                Box(modifier = Modifier.size(8.dp).background(colorAccent, CircleShape))
+                Spacer(Modifier.width(8.dp))
+                Text(nombreEquipo.uppercase(), color = Blanco, fontWeight = FontWeight.Black, fontSize = 13.sp)
+                Spacer(Modifier.weight(1f))
+                Text("${plantilla.size} JUGADORES", color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
             
             if (plantilla.isEmpty()) {
-                Text("No hay jugadores registrados para este equipo", color = GrisClaro, fontSize = 11.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("SIN REGISTROS", color = TextoSec, fontSize = 11.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             } else {
                 plantilla.forEach { jug ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .background(Color.Black.copy(0.15f), RoundedCornerShape(12.dp))
-                            .padding(12.dp),
+                            .background(Negro.copy(0.15f), RoundedCornerShape(8.dp))
+                            .padding(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(
-                            modifier = Modifier.size(38.dp),
-                            shape = CircleShape,
-                            color = (if(isLocal) Verde else Color(0xFFFFD700)).copy(0.15f)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = jug.dorsal.toString(),
-                                    color = if(isLocal) Verde else Color(0xFFFFD700),
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = jug.dorsal.toString(),
+                            color = colorAccent,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 14.sp,
+                            modifier = Modifier.width(35.dp),
+                            maxLines = 1
+                        )
                         
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = jug.nombre.uppercase(),
-                                color = Blanco,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                maxLines = 1
-                            )
-                            Text(
-                                text = jug.posicion.uppercase(),
-                                color = if(isLocal) Verde else GrisClaro,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text(jug.nombre.uppercase(), color = Blanco, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
+                            Text(jug.posicion.uppercase(), color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
-                        
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            tint = Blanco.copy(0.1f),
-                            modifier = Modifier.size(24.dp)
-                        )
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun TeamDetailCol(nombre: String, equipos: List<Equipo>, modifier: Modifier) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
-        Surface(
-            shape = CircleShape, 
-            color = Color.Black.copy(0.2f), 
-            modifier = Modifier.size(70.dp),
-            border = androidx.compose.foundation.BorderStroke(2.dp, Verde.copy(0.5f))
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    Icons.Default.Shield, 
-                    contentDescription = null, 
-                    tint = Verde, 
-                    modifier = Modifier.size(36.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            nombre.uppercase(), 
-            color = Blanco, 
-            fontSize = 13.sp, 
-            fontWeight = FontWeight.Black, 
-            textAlign = TextAlign.Center,
-            lineHeight = 16.sp
-        )
     }
 }

@@ -1,5 +1,6 @@
 package com.example.football_team_frontend.ui.screens
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -13,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.football_team_frontend.ui.theme.FondoOscuro
+import com.example.football_team_frontend.ui.theme.TextoSec
 import com.example.football_team_frontend.ui.theme.Verde
 
 @Composable
@@ -51,7 +54,7 @@ fun BottomNavigationBar(
                 label = {
                     Text(
                         text       = item.label,
-                        fontSize   = 10.sp,
+                        fontSize   = 8.sp,
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                     )
                 },

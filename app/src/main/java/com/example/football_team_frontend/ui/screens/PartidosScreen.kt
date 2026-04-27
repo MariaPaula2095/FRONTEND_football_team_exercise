@@ -67,16 +67,65 @@ fun PartidosScreen(
     }
 
     Scaffold(
-        containerColor = VerdeOscuro,
+        containerColor = SuperficieAlt,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(
+                    onClick  = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Atrás",
+                        tint               = Color.White,
+                        modifier           = Modifier.size(18.dp)
+                    )
+                }
+                
+                Text(
+                    text = "PARTIDOS Y GOLES",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+
+                IconButton(
+                    onClick  = onRefrescarClick,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Refrescar",
+                        tint               = Verde,
+                        modifier           = Modifier.size(20.dp)
+                    )
+                }
+            }
+        },
         floatingActionButton = {
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = onAgregarClick,
                 containerColor = Verde,
                 contentColor = Blanco,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Nuevo Partido")
-            }
+                shape = RoundedCornerShape(16.dp),
+                icon = { Icon(Icons.Default.Add, "Agregar") },
+                text = { Text("AGREGAR", fontWeight = FontWeight.Black) }
+            )
         }
     ) { padding ->
         Column(
@@ -84,29 +133,15 @@ fun PartidosScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Cabecera
+            // Cabecera con Buscador y Filtros
             Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onBackClick, modifier = Modifier.background(Color.White.copy(0.1f), CircleShape).size(36.dp)) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = null, tint = Blanco, modifier = Modifier.size(16.dp))
-                    }
-                    Text("PARTIDOS Y GOLES", color = Verde, fontSize = 14.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                    IconButton(onClick = onRefrescarClick, modifier = Modifier.background(Color.White.copy(0.1f), CircleShape).size(36.dp)) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Verde, modifier = Modifier.size(18.dp))
-                    }
-                }
-
                 if (mensaje != null) {
                     Snackbar(
-                        modifier = Modifier.padding(top = 8.dp),
-                        containerColor = if (mensaje.contains("éxito")) Color(0xFF2E7D32) else Color(0xFFB00020),
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        containerColor = if (mensaje.contains("éxito", true)) Verde else ErrorRed,
                         action = {
                             TextButton(onClick = onDismissMensaje) {
-                                Text("OK", color = Blanco)
+                                Text("OK", color = Blanco, fontWeight = FontWeight.Bold)
                             }
                         }
                     ) {
@@ -114,59 +149,64 @@ fun PartidosScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
                 // Buscador
                 OutlinedTextField(
                     value = searchTexto,
                     onValueChange = { searchTexto = it },
-                    placeholder = { Text("Buscar por equipo o estadio...", color = GrisClaro.copy(0.5f)) },
+                    placeholder = { Text("Buscar por equipo o estadio...", color = TextoSec.copy(0.6f)) },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(16.dp),
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Verde) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF16312C),
-                        unfocusedContainerColor = Color(0xFF16312C),
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent,
+                        focusedContainerColor = FichaFondo.copy(0.5f),
+                        unfocusedContainerColor = FichaFondo.copy(0.5f),
+                        focusedBorderColor = Verde,
+                        unfocusedBorderColor = BorderSutil,
                         focusedTextColor = Blanco,
                         unfocusedTextColor = Blanco
                     )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("VER GOLES TOTALES POR EQUIPO", color = Verde, fontSize = 11.sp, fontWeight = FontWeight.Black)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("VER GOLES TOTALES POR EQUIPO", color = TextoSec, fontSize = 11.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                Spacer(modifier = Modifier.height(10.dp))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     equipos.map { it.nombre }.distinct().forEach { eq ->
                         val isSelected = equipoSeleccionadoGoles == eq
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) Verde else Color(0xFF1F4A43))
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isSelected) Verde else FichaFondo)
                                 .clickable { equipoSeleccionadoGoles = if (isSelected) null else eq }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
                         ) {
-                            Text(eq.uppercase(), color = Blanco, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(eq.uppercase(), color = Blanco, fontSize = 11.sp, fontWeight = FontWeight.Black)
                         }
                     }
                 }
 
                 if (equipoSeleccionadoGoles != null) {
                     Card(
-                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A3F39))
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = FichaFondo)
                     ) {
-                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Verde)
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text("$equipoSeleccionadoGoles: ", color = Verde, fontWeight = FontWeight.Bold)
-                            Text("$golesTotales Goles", color = Blanco, fontWeight = FontWeight.Black)
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier.size(40.dp).background(Verde.copy(0.2f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = Verde, modifier = Modifier.size(20.dp))
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Column {
+                                Text(equipoSeleccionadoGoles?.uppercase() ?: "", color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                Text("$golesTotales GOLES TOTALES", color = Blanco, fontSize = 16.sp, fontWeight = FontWeight.Black)
+                            }
                         }
                     }
                 }
@@ -180,13 +220,12 @@ fun PartidosScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp, start = 24.dp, end = 24.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp, start = 24.dp, end = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(partidosFiltrados) { resultado ->
                         PartidoScoreCard(
                             resultado = resultado,
-                            equipos = equipos,
                             onClick = { resultado.idPartido?.let { onDetalleClick(it) } }
                         )
                     }
@@ -197,23 +236,8 @@ fun PartidosScreen(
 }
 
 @Composable
-fun CustomTab(text: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
-    Box(
-        modifier = modifier
-            .fillMaxHeight()
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (selected) Verde else Color.Transparent)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = text, color = Blanco, fontSize = 13.sp, fontWeight = FontWeight.Black)
-    }
-}
-
-@Composable
 fun PartidoScoreCard(
     resultado: ResultadoPartido,
-    equipos: List<Equipo>,
     onClick: () -> Unit
 ) {
     val sdfDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -225,20 +249,18 @@ fun PartidoScoreCard(
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1F4A43).copy(0.8f))
+        colors = CardDefaults.cardColors(containerColor = FichaFondo)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Stadium, contentDescription = null, tint = Verde, modifier = Modifier.size(12.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(resultado.estadio, color = Blanco.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Icon(Icons.Default.Stadium, contentDescription = null, tint = Verde, modifier = Modifier.size(14.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Box(modifier = Modifier.size(4.dp).background(Verde, CircleShape))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(resultado.fecha.split(" ")[0], color = Blanco.copy(0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text(resultado.estadio.uppercase(), color = TextoSec, fontSize = 11.sp, fontWeight = FontWeight.Black)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(resultado.fecha.split(" ")[0], color = TextoSec, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 TeamColumnMinimal(resultado.equipoLocal, Modifier.weight(1f))
@@ -248,9 +270,9 @@ fun PartidoScoreCard(
                         Text("VS", color = Verde, fontSize = 24.sp, fontWeight = FontWeight.Black)
                     } else {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(resultado.golesLocal.toString(), color = Blanco, fontSize = 36.sp, fontWeight = FontWeight.Black)
-                            Text(" : ", color = Blanco, fontSize = 28.sp, fontWeight = FontWeight.Black)
-                            Text(resultado.golesVisitante.toString(), color = Blanco, fontSize = 36.sp, fontWeight = FontWeight.Black)
+                            Text(resultado.golesLocal.toString(), color = Blanco, fontSize = 32.sp, fontWeight = FontWeight.Black)
+                            Text(" : ", color = Verde, fontSize = 24.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 8.dp))
+                            Text(resultado.golesVisitante.toString(), color = Blanco, fontSize = 32.sp, fontWeight = FontWeight.Black)
                         }
                     }
                 }

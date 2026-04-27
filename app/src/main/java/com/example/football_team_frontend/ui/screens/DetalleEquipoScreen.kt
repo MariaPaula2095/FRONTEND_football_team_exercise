@@ -12,24 +12,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.model.Equipo
+import com.example.football_team_frontend.ui.components.MetricBox
+import com.example.football_team_frontend.ui.components.MetricBoxRow
 import com.example.football_team_frontend.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
-
-// ── Paleta ──────────────────────────────────────────────────────────────────
-private val Superficie    = Color(0xFF1A3D2C)
-private val SuperficieAlt = Color(0xFF153224)
-private val FichaFondo    = Color(0xFF1F4A34)
-private val TextoSec      = Color(0xFF7FB99A)
 
 @Composable
 fun DetalleEquipoScreen(
@@ -38,7 +32,6 @@ fun DetalleEquipoScreen(
     onEditarClick: () -> Unit,
     onEliminarClick: (Long) -> Unit
 ) {
-
     // ── Estado vacío ──────────────────────────────────────────────────────
     if (equipo == null) {
         Box(
@@ -55,7 +48,7 @@ fun DetalleEquipoScreen(
                     Icon(Icons.Default.SearchOff, null, tint = TextoSec, modifier = Modifier.size(36.dp))
                 }
                 Spacer(Modifier.height(16.dp))
-                Text("Equipo no encontrado", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("EQUIPO NO ENCONTRADO", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Text("No hay información disponible", color = TextoSec, fontSize = 13.sp)
             }
         }
@@ -69,8 +62,8 @@ fun DetalleEquipoScreen(
         .joinToString("") { it.first().uppercaseChar().toString() }
 
     val fechaFormateada = remember(equipo.fundacion) {
-        SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale("es", "CO"))
-            .format(equipo.fundacion)
+        SimpleDateFormat("dd 'DE' MMMM 'DE' YYYY", Locale("es", "CO"))
+            .format(equipo.fundacion).uppercase()
     }
 
     val anioFundacion = remember(equipo.fundacion) {
@@ -86,18 +79,12 @@ fun DetalleEquipoScreen(
             containerColor   = FichaFondo,
             shape            = RoundedCornerShape(20.dp),
             title = {
-                Text(
-                    "¿Eliminar equipo?",
-                    color      = Color.White,
-                    fontWeight = FontWeight.Black,
-                    fontSize   = 16.sp
-                )
+                Text("¿ELIMINAR EQUIPO?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
             },
             text = {
                 Text(
                     "Se eliminará ${equipo.nombre} del sistema. Esta acción no se puede deshacer.",
-                    color    = TextoSec,
-                    fontSize = 14.sp
+                    color = TextoSec, fontSize = 14.sp
                 )
             },
             confirmButton = {
@@ -105,53 +92,70 @@ fun DetalleEquipoScreen(
                     onEliminarClick(equipo.idEquipo)
                     mostrarDialogoEliminar = false
                 }) {
-                    Text("Eliminar", color = Color(0xFFEF5350), fontWeight = FontWeight.Bold)
+                    Text("ELIMINAR", color = ErrorRed, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogoEliminar = false }) {
-                    Text("Cancelar", color = TextoSec)
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(SuperficieAlt)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // ── HERO ─────────────────────────────────────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(listOf(Color(0xFF0D2B1C), Color(0xFF163222)))
-                )
-                .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-        ) {
-            Column {
-                // Navegación
+    Scaffold(
+        containerColor = SuperficieAlt,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
                 IconButton(
                     onClick  = onBackClick,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(40.dp)
                         .background(Color.White.copy(alpha = 0.12f), CircleShape)
                 ) {
                     Icon(
                         Icons.Default.ArrowBackIosNew,
                         contentDescription = "Atrás",
                         tint               = Color.White,
-                        modifier           = Modifier.size(20.dp)
+                        modifier           = Modifier.size(18.dp)
                     )
                 }
-
-                Spacer(Modifier.height(28.dp))
-
-                // Avatar + nombre
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                
+                Text(
+                    text = "FICHA TÉCNICA DEL EQUIPO",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // ── Hero Section ──────────────────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(listOf(FondoOscuro, SuperficieAlt))
+                    )
+                    .padding(horizontal = 20.dp, vertical = 30.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                     Box(
                         modifier         = Modifier
                             .size(80.dp)
@@ -161,142 +165,113 @@ fun DetalleEquipoScreen(
                         Text(
                             iniciales,
                             color      = Verde,
-                            fontSize   = 26.sp,
+                            fontSize   = 28.sp,
                             fontWeight = FontWeight.Black
                         )
                     }
 
-                    Spacer(Modifier.width(18.dp))
+                    Spacer(Modifier.height(20.dp))
 
-                    Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        equipo.nombre.uppercase(),
+                        color      = Color.White,
+                        fontSize   = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign  = TextAlign.Center,
+                        maxLines   = 2,
+                        overflow   = TextOverflow.Ellipsis
+                    )
+                    
+                    Spacer(Modifier.height(8.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .background(Verde.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
                         Text(
-                            "Ficha del equipo",
-                            color         = TextoSec,
-                            fontSize      = 12.sp,
-                            fontWeight    = FontWeight.SemiBold,
-                            letterSpacing = 0.8.sp
+                            "FUNDADO EN $anioFundacion",
+                            color      = Verde,
+                            fontSize   = 12.sp,
+                            fontWeight = FontWeight.Black
                         )
-                        Text(
-                            equipo.nombre,
-                            color      = Color.White,
-                            fontSize   = 22.sp,
-                            fontWeight = FontWeight.Black,
-                            lineHeight = 26.sp,
-                            maxLines   = 2,
-                            overflow   = TextOverflow.Ellipsis
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Box(
-                            modifier = Modifier
-                                .background(Verde.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                "Desde $anioFundacion",
-                                color      = Verde,
-                                fontSize   = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
                     }
                 }
             }
-        }
 
-        // ── Cuerpo ────────────────────────────────────────────────────────
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                "Información del equipo",
-                color         = TextoSec,
-                fontSize      = 12.sp,
-                fontWeight    = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
-
-            // Nombre + Ciudad en fila
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // ── Cuerpo de información ─────────────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                FichaInfoBox(
-                    modifier = Modifier.weight(1f),
-                    label    = "Nombre",
-                    value    = equipo.nombre,
-                    icon     = Icons.Default.Shield,
-                    color    = Verde
+                Text(
+                    "DETALLES DE LA INSTITUCIÓN",
+                    color         = TextoSec,
+                    fontSize      = 12.sp,
+                    fontWeight    = FontWeight.Black,
+                    letterSpacing = 1.sp
                 )
-                FichaInfoBox(
-                    modifier = Modifier.weight(1f),
-                    label    = "Ciudad",
-                    value    = equipo.ciudad,
-                    icon     = Icons.Default.LocationOn,
-                    color    = Color(0xFF26C6DA)
+
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "CIUDAD",
+                        value    = equipo.ciudad.uppercase(),
+                        icon     = Icons.Default.LocationOn,
+                        color    = InfoBlue
+                    )
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "SIGLAS",
+                        value    = iniciales,
+                        icon     = Icons.Default.Shield,
+                        color    = Verde
+                    )
+                }
+
+                MetricBoxRow(
+                    label = "FECHA DE FUNDACIÓN",
+                    value = fechaFormateada,
+                    icon  = Icons.Default.CalendarToday,
+                    color = WarningYellow
                 )
-            }
 
-            // Fecha completa
-            FichaInfoRow(
-                label = "Fecha de fundación",
-                value = fechaFormateada,
-                icon  = Icons.Default.CalendarToday,
-                color = Color(0xFFFFD600)
-            )
+                Spacer(Modifier.height(16.dp))
 
-
-
-            Spacer(Modifier.height(8.dp))
-
-            // Botones
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(
-                    onClick  = onEditarClick,
-                    modifier = Modifier.weight(1f),
-                    shape    = RoundedCornerShape(14.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = Verde)
+                // Botones de acción
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(Icons.Default.Edit, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Editar", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Button(
+                        onClick  = onEditarClick,
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = Verde)
+                    ) {
+                        Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("EDITAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                    Button(
+                        onClick  = { mostrarDialogoEliminar = true },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = ErrorRed)
+                    ) {
+                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("ELIMINAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
                 }
-                OutlinedButton(
-                    onClick  = { mostrarDialogoEliminar = true },
-                    modifier = Modifier.weight(1f),
-                    shape    = RoundedCornerShape(14.dp),
-                    colors   = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFEF5350)),
-                    border   = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEF5350).copy(alpha = 0.5f))
-                ) {
-                    Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Eliminar", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
+                
+                Spacer(Modifier.height(40.dp))
             }
         }
     }
-}
-
-// ── Preview ───────────────────────────────────────────────────────────────
-@Preview(showBackground = true, backgroundColor = 0xFF0D2B1C, showSystemUi = true)
-@Composable
-fun DetalleEquipoScreenPreview() {
-    val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val equipoFake = Equipo(
-        idEquipo  = 1L,
-        nombre    = "Millonarios FC",
-        ciudad    = "Bogotá",
-        fundacion = formato.parse("1946-06-18")!!
-    )
-    DetalleEquipoScreen(
-        equipo          = equipoFake,
-        onBackClick     = {},
-        onEditarClick   = {},
-        onEliminarClick = {}
-    )
 }

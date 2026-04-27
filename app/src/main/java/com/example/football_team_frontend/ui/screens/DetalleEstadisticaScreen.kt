@@ -2,8 +2,10 @@ package com.example.football_team_frontend.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.model.EstadisticasJugadorDto
 import com.example.football_team_frontend.model.ResultadoPartido
+import com.example.football_team_frontend.ui.components.MetricBox
+import com.example.football_team_frontend.ui.components.MetricBoxRow
 import com.example.football_team_frontend.ui.theme.*
 
 @Composable
@@ -28,79 +32,96 @@ fun DetalleEstadisticaScreen(
     onEditarClick: (EstadisticasJugadorDto) -> Unit,
     onEliminarClick: (Long) -> Unit
 ) {
+    // ── Estado vacío ──────────────────────────────────────────────────────
     if (estadistica == null) {
-        Box(modifier = Modifier.fillMaxSize().background(VerdeOscuro), contentAlignment = Alignment.Center) {
-            Text("No se encontró la información", color = Blanco)
+        Box(
+            modifier         = Modifier.fillMaxSize().background(SuperficieAlt),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier         = Modifier
+                        .size(72.dp)
+                        .background(Superficie, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.BarChart, null, tint = TextoSec, modifier = Modifier.size(36.dp))
+                }
+                Spacer(Modifier.height(16.dp))
+                Text("Estadística no encontrada", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("No hay información disponible", color = TextoSec, fontSize = 13.sp)
+            }
         }
         return
     }
 
     var mostrarDialogoEliminar by remember { mutableStateOf(false) }
 
+    // ── Diálogo confirmar eliminación ─────────────────────────────────────
     if (mostrarDialogoEliminar) {
         AlertDialog(
             onDismissRequest = { mostrarDialogoEliminar = false },
-            containerColor = CardColor,
-            titleContentColor = Blanco,
-            textContentColor = GrisClaro,
-            title = { Text("¿Eliminar registro?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro de que deseas eliminar las estadísticas de ${estadistica.nombreJugador} en este partido?") },
+            containerColor   = FichaFondo,
+            shape            = RoundedCornerShape(20.dp),
+            title = {
+                Text("¿ELIMINAR REGISTRO?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            },
+            text = {
+                Text(
+                    "Se eliminará este registro de rendimiento para ${estadistica.nombreJugador}. Esta acción no se puede deshacer.",
+                    color = TextoSec, fontSize = 14.sp
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     estadistica.idEstadistica?.let { onEliminarClick(it) }
                     mostrarDialogoEliminar = false
                 }) {
-                    Text("ELIMINAR", color = Color(0xFFFF4D4D), fontWeight = FontWeight.Bold)
+                    Text("ELIMINAR", color = ErrorRed, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogoEliminar = false }) {
-                    Text("CANCELAR", color = Blanco)
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
     }
 
     Scaffold(
-        containerColor = VerdeOscuro,
+        containerColor = SuperficieAlt,
         topBar = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 8.dp),
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier.background(CardColor, CircleShape).size(40.dp)
+                    onClick  = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
                 ) {
-                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Atrás", tint = Blanco, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Atrás",
+                        tint               = Color.White,
+                        modifier           = Modifier.size(18.dp)
+                    )
                 }
                 
                 Text(
                     text = "DETALLE DE RENDIMIENTO",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
-                    color = Blanco,
+                    color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.sp
                 )
-
-                Row(modifier = Modifier.align(Alignment.CenterEnd), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IconButton(
-                        onClick = { onEditarClick(estadistica) },
-                        modifier = Modifier.background(Verde, CircleShape).size(40.dp)
-                    ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = Blanco, modifier = Modifier.size(20.dp))
-                    }
-                    IconButton(
-                        onClick = { mostrarDialogoEliminar = true },
-                        modifier = Modifier.background(Color(0xFF780000), CircleShape).size(40.dp)
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Blanco, modifier = Modifier.size(20.dp))
-                    }
-                }
             }
         }
     ) { padding ->
@@ -108,95 +129,163 @@ fun DetalleEstadisticaScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Info de Cabecera
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = CardColor)
+            // ── Header con info de jugador y partido ──────────────────────────
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        androidx.compose.ui.graphics.Brush.verticalGradient(listOf(FondoOscuro, SuperficieAlt))
+                    )
+                    .padding(horizontal = 20.dp, vertical = 30.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = estadistica.nombreJugador?.uppercase() ?: "JUGADOR",
-                        color = Blanco,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black
-                    )
-                    
-                    val partidoLabel = if (partido != null) {
-                        "${partido.equipoLocal} vs ${partido.equipoVisitante}"
-                    } else {
-                        "Partido #${estadistica.idPartido}"
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier         = Modifier
+                            .size(80.dp)
+                            .background(Verde.copy(alpha = 0.18f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.SportsSoccer, null, tint = Verde, modifier = Modifier.size(40.dp))
                     }
-                    
+
+                    Spacer(Modifier.height(20.dp))
+
                     Text(
-                        text = partidoLabel,
-                        color = Verde,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
+                        estadistica.nombreJugador?.uppercase() ?: "JUGADOR",
+                        color      = Color.White,
+                        fontSize   = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign  = TextAlign.Center
                     )
                     
+                    Spacer(Modifier.height(8.dp))
+
+                    val partidoLabel = if (partido != null) {
+                        "${partido.equipoLocal} VS ${partido.equipoVisitante}"
+                    } else {
+                        "PARTIDO #${estadistica.idPartido}"
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .background(Verde.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            partidoLabel.uppercase(),
+                            color      = Verde,
+                            fontSize   = 12.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+
                     if (partido != null) {
                         Text(
                             text = partido.fecha,
-                            color = GrisClaro,
-                            fontSize = 12.sp
+                            color = TextoSec,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // ── Cuerpo de métricas ────────────────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "MÉTRICAS DEL PARTIDO",
+                    color         = TextoSec,
+                    fontSize      = 12.sp,
+                    fontWeight    = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
 
-            Text(
-                "MÉTRICAS DEL PARTIDO",
-                color = Blanco,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.sp
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Rejilla de Estadísticas
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    MetricBox(Modifier.weight(1f), "GOLES", "${estadistica.goles ?: 0}", Icons.Default.SportsSoccer, Verde)
-                    MetricBox(Modifier.weight(1f), "ASISTENCIAS", "${estadistica.asistencias ?: 0}", Icons.Default.Star, Color(0xFF64B5F6))
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "GOLES",
+                        value    = "${estadistica.goles ?: 0}",
+                        icon     = Icons.Default.SportsSoccer,
+                        color    = Verde
+                    )
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "ASISTENCIAS",
+                        value    = "${estadistica.asistencias ?: 0}",
+                        icon     = Icons.Default.Star,
+                        color    = InfoBlue
+                    )
                 }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    MetricBox(Modifier.weight(1f), "T. AMARILLAS", "${estadistica.tarjetasAmarillas ?: 0}", Icons.Default.Square, Color.Yellow)
-                    MetricBox(Modifier.weight(1f), "T. ROJAS", "${estadistica.tarjetasRojas ?: 0}", Icons.Default.Square, Color.Red)
+
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "T. AMARILLAS",
+                        value    = "${estadistica.tarjetasAmarillas ?: 0}",
+                        icon     = Icons.Default.Rectangle,
+                        color    = WarningYellow
+                    )
+                    MetricBox(
+                        modifier = Modifier.weight(1f),
+                        label    = "T. ROJAS",
+                        value    = "${estadistica.tarjetasRojas ?: 0}",
+                        icon     = Icons.Default.Rectangle,
+                        color    = ErrorRed
+                    )
                 }
-                MetricBox(Modifier.fillMaxWidth(), "MINUTOS JUGADOS", "${estadistica.minutosJugados ?: 0} min", Icons.Default.Timer, Blanco)
+
+                MetricBoxRow(
+                    label = "MINUTOS JUGADOS",
+                    value = "${estadistica.minutosJugados ?: 0} MIN",
+                    icon  = Icons.Default.Timer,
+                    color = WarningYellow
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // Botones de acción al pie
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick  = { onEditarClick(estadistica) },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = Verde)
+                    ) {
+                        Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("EDITAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                    Button(
+                        onClick  = { mostrarDialogoEliminar = true },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                        shape    = RoundedCornerShape(12.dp),
+                        colors   = ButtonDefaults.buttonColors(containerColor = ErrorRed)
+                    ) {
+                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("ELIMINAR", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    }
+                }
+                
+                Spacer(Modifier.height(40.dp))
             }
         }
     }
 }
 
-@Composable
-fun MetricBox(modifier: Modifier, label: String, value: String, icon: ImageVector, color: Color) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = CardColor)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(label, color = GrisClaro, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                Text(value, color = Blanco, fontSize = 18.sp, fontWeight = FontWeight.Black)
-            }
-        }
-    }
-}

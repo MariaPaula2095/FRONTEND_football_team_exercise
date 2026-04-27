@@ -30,21 +30,21 @@ import java.util.Locale
 
 // ── Paleta interna ──────────────────────────────────────────────────────────
 private val Superficie   = Color(0xFF1A3D2C)
-private val SuperficieAlt= Color(0xFF153224)
+private val SuperficieAlt= FondoOscuro
 private val FichaFondo   = Color(0xFF1F4A34)
 private val BorderSutil  = Color(0xFF2D6645)
 private val TextoSec     = Color(0xFF7FB99A)
 
 // Colores por posición
 private fun colorPosicion(posicion: String): Color = when {
-    posicion.contains("Portero",      ignoreCase = true) -> Color(0xFFFFA726)
+    posicion.contains("Portero",      ignoreCase = true) -> WarningYellow
     posicion.contains("Defensa",      ignoreCase = true) ||
-            posicion.contains("Lateral",      ignoreCase = true) -> Color(0xFF42A5F5)
+            posicion.contains("Lateral",      ignoreCase = true) -> InfoBlue
     posicion.contains("Mediocampista",ignoreCase = true) ||
             posicion.contains("Medio",        ignoreCase = true) -> Color(0xFF9F25B4)
     posicion.contains("Extremo",      ignoreCase = true) -> Color(0xFF26C6DA)
-    posicion.contains("Delantero",    ignoreCase = true) -> Color(0xFFEF5350)
-    else                                                  -> Color(0xFF66BB6A)
+    posicion.contains("Delantero",    ignoreCase = true) -> ErrorRed
+    else                                                  -> Verde
 }
 
 private fun inicialPosicion(posicion: String): String = when {
@@ -87,7 +87,6 @@ fun JugadoresScreen(
     }
 
     Scaffold(
-
         containerColor = SuperficieAlt,
         snackbarHost   = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
@@ -95,9 +94,9 @@ fun JugadoresScreen(
                 onClick          = onAgregarClick,
                 containerColor   = Verde,
                 contentColor     = Color.White,
-                shape            = RoundedCornerShape(50.dp),
+                shape            = RoundedCornerShape(16.dp),
                 icon             = { Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp)) },
-                text             = { Text("Nuevo jugador", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+                text             = { Text("AGREGAR", fontWeight = FontWeight.Black, fontSize = 14.sp, letterSpacing = 1.sp) }
             )
         }
     ) { padding ->
@@ -391,22 +390,22 @@ fun JugadorCard(jugador: Jugador, equipoNombre: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 5.dp)
+            .padding(horizontal = 20.dp, vertical = 6.dp)
             .clickable { onClick() },
-        shape  = RoundedCornerShape(18.dp),
+        shape  = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = FichaFondo),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier          = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar con iniciales de posición y color distintivo
             Box(
                 modifier         = Modifier
-                    .size(52.dp)
+                    .size(48.dp)
                     .background(posColor.copy(alpha = 0.15f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -418,74 +417,65 @@ fun JugadorCard(jugador: Jugador, equipoNombre: String, onClick: () -> Unit) {
                 )
             }
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
 
             // Info central
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    jugador.nombre,
+                    jugador.nombre.uppercase(),
                     color      = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 15.sp,
+                    fontWeight = FontWeight.Black,
+                    fontSize   = 14.sp,
                     maxLines   = 1,
-                    overflow   = TextOverflow.Ellipsis
+                    overflow   = TextOverflow.Ellipsis,
+                    letterSpacing = 0.5.sp
                 )
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(4.dp))
                 // Posición con pill de color
                 Row(
                     verticalAlignment      = Alignment.CenterVertically,
-                    horizontalArrangement  = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement  = Arrangement.spacedBy(8.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .background(posColor.copy(alpha = 0.18f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 7.dp, vertical = 2.dp)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            jugador.posicion,
+                            jugador.posicion.uppercase(),
                             color      = posColor,
-                            fontSize   = 10.sp,
-                            fontWeight = FontWeight.Bold,
+                            fontSize   = 9.sp,
+                            fontWeight = FontWeight.Black,
                             maxLines   = 1
                         )
                     }
-                    Text("·", color = TextoSec, fontSize = 11.sp)
+                    Text("•", color = TextoSec, fontSize = 12.sp)
                     Text(
-                        jugador.nacionalidad,
-                        color    = TextoSec,
-                        fontSize = 11.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        equipoNombre,
+                        color      = Verde,
+                        fontSize   = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines   = 1,
+                        overflow   = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(Modifier.height(3.dp))
-                Text(
-                    equipoNombre,
-                    color      = Verde,
-                    fontSize   = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines   = 1,
-                    overflow   = TextOverflow.Ellipsis
-                )
             }
 
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(12.dp))
 
-            // Dorsal + flecha
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Dorsal
+            Box(
+                modifier = Modifier
+                    .background(Color.White.copy(alpha = 0.05f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(
                     "#${jugador.dorsal}",
                     color      = Color.White,
-                    fontSize   = 18.sp,
+                    fontSize   = 16.sp,
                     fontWeight = FontWeight.Black
                 )
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint               = TextoSec,
-                    modifier           = Modifier.size(18.dp)
-                )
-
             }
         }
     }

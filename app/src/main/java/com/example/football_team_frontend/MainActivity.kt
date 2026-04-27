@@ -100,7 +100,8 @@ class MainActivity : ComponentActivity() {
                                 cargando             = cargando,
                                 mensaje              = mensaje,
                                 jugadoresConMasGoles = jugadoresConMasGoles,                          // ← nueva
-                                onBuscarPorGoles     = { estadisticaViewModel.buscarJugadoresPorGoles(it) }, // ← nueva
+                                onBuscarPorGoles     = { estadisticaViewModel.buscarJugadoresPorGoles(it) },
+                                onLimpiarBusqueda    = { estadisticaViewModel.limpiarBusqueda() },
                                 onDismissMensaje     = { estadisticaViewModel.limpiarMensaje() },
                                 onBackClick          = { navController.popBackStack() },
                                 onRefrescarClick     = { estadisticaViewModel.obtenerEstadisticas() },

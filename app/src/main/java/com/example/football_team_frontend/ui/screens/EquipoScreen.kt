@@ -29,7 +29,7 @@ import java.util.*
 
 // ── Paleta interna ──────────────────────────────────────────────────────────
 private val Superficie    = Color(0xFF1A3D2C)
-private val SuperficieAlt = Color(0xFF153224)
+private val SuperficieAlt = FondoOscuro
 private val FichaFondo    = Color(0xFF1F4A34)
 private val BorderSutil   = Color(0xFF2D6645)
 private val TextoSec      = Color(0xFF7FB99A)
@@ -65,12 +65,12 @@ fun EquiposScreen(
         snackbarHost   = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick        = onAgregarClick,
-                containerColor = Verde,
-                contentColor   = Color.White,
-                shape          = RoundedCornerShape(50.dp),
-                icon           = { Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp)) },
-                text           = { Text("Nuevo equipo", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+                onClick          = onAgregarClick,
+                containerColor   = Verde,
+                contentColor     = Color.White,
+                shape            = RoundedCornerShape(16.dp),
+                icon             = { Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp)) },
+                text             = { Text("AGREGAR", fontWeight = FontWeight.Black, fontSize = 14.sp, letterSpacing = 1.sp) }
             )
         }
     ) { padding ->
@@ -320,28 +320,29 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
     Card(
         modifier  = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 5.dp)
+            .padding(horizontal = 20.dp, vertical = 6.dp)
             .clickable { onClick() },
-        shape     = RoundedCornerShape(18.dp),
+        shape     = RoundedCornerShape(16.dp),
         colors    = CardDefaults.cardColors(containerColor = FichaFondo),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier          = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar con iniciales del equipo
             Box(
                 modifier         = Modifier
-                    .size(52.dp)
+                    .size(48.dp)
                     .background(Verde.copy(alpha = 0.18f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text       = equipo.nombre
                         .split(" ")
+                        .filter { it.isNotBlank() }
                         .take(2)
                         .joinToString("") { it.first().uppercaseChar().toString() },
                     color      = Verde,
@@ -350,23 +351,24 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
                 )
             }
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
 
             // Info central
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text       = equipo.nombre,
+                    text       = equipo.nombre.uppercase(),
                     color      = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 15.sp,
+                    fontWeight = FontWeight.Black,
+                    fontSize   = 14.sp,
                     maxLines   = 1,
-                    overflow   = TextOverflow.Ellipsis
+                    overflow   = TextOverflow.Ellipsis,
+                    letterSpacing = 0.5.sp
                 )
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(4.dp))
                 // Ciudad con pill
                 Row(
                     verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
@@ -382,36 +384,24 @@ fun EquipoCard(equipo: Equipo, onClick: () -> Unit) {
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(Modifier.height(3.dp))
-                // Año fundación
-                Row(
-                    verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector        = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint               = Verde,
-                        modifier           = Modifier.size(12.dp)
-                    )
-                    Text(
-                        text       = "Fundado en $anioFundacion",
-                        color      = Verde,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
             }
 
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(12.dp))
 
-            // ID + flecha
-            Icon(
-                Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint               = TextoSec,
-                modifier           = Modifier.size(18.dp)
-            )
+            // Año fundación pill
+            Box(
+                modifier = Modifier
+                    .background(Verde.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text       = anioFundacion,
+                    color      = Verde,
+                    fontSize   = 13.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
         }
     }
 }

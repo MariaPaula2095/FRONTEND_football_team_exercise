@@ -1,7 +1,6 @@
 package com.example.football_team_frontend.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -15,14 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.model.Entrenador
 import com.example.football_team_frontend.model.Equipo
+import com.example.football_team_frontend.ui.components.FormTextField
 import com.example.football_team_frontend.ui.theme.*
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +48,7 @@ fun FormularioEntrenadorScreen(
 
     fun validar() {
         if (nombre.isBlank() || especialidad.isBlank() || equipoSeleccionado == null) {
-            errorTexto = "Por favor, completa todos los campos obligatorios."
+            errorTexto = "POR FAVOR, COMPLETA TODOS LOS CAMPOS."
             return
         }
         errorTexto = null
@@ -61,11 +59,17 @@ fun FormularioEntrenadorScreen(
     if (mostrarConfirmacion) {
         AlertDialog(
             onDismissRequest  = { mostrarConfirmacion = false },
-            containerColor    = Color(0xFF1F4A43),
-            titleContentColor = Blanco,
-            textContentColor  = GrisClaro,
-            title = { Text("¿Guardar cambios?", fontWeight = FontWeight.Bold) },
-            text  = { Text("Se guardará la información de $nombre en la base de datos.") },
+            containerColor    = FichaFondo,
+            shape            = RoundedCornerShape(20.dp),
+            title = {
+                Text("¿GUARDAR CAMBIOS?", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+            },
+            text  = {
+                Text(
+                    "Se guardará la información de $nombre en la base de datos.",
+                    color = TextoSec, fontSize = 14.sp
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     onGuardarClick(
@@ -78,59 +82,71 @@ fun FormularioEntrenadorScreen(
                     )
                     mostrarConfirmacion = false
                 }) {
-                    Text("Aceptar", color = Verde)
+                    Text("ACEPTAR", color = Verde, fontWeight = FontWeight.Black)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarConfirmacion = false }) {
-                    Text("Cancelar", color = GrisClaro)
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
     }
 
-    // ── Contenido principal ───────────────────────────────────────────────
-    Box(modifier = Modifier.fillMaxSize().background(VerdeOscuro)) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Cabecera
-            Row(verticalAlignment = Alignment.CenterVertically) {
+    Scaffold(
+        containerColor = SuperficieAlt,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
                 IconButton(
                     onClick  = onBackClick,
                     modifier = Modifier
-                        .background(Color(0xFF1F4A43), CircleShape)
-                        .size(36.dp)
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
                 ) {
                     Icon(
                         Icons.Default.ArrowBackIosNew,
-                        contentDescription = null,
-                        tint     = Blanco,
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = "Atrás",
+                        tint               = Color.White,
+                        modifier           = Modifier.size(18.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                
                 Text(
-                    text       = if (entrenador == null) "Nuevo Entrenador" else "Editar Entrenador",
-                    color      = Blanco,
-                    fontSize   = 22.sp,
-                    fontWeight = FontWeight.Bold
+                    text = if (entrenador == null) "NUEVO ENTRENADOR" else "EDITAR ENTRENADOR",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
                 )
             }
-
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 24.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             Spacer(modifier = Modifier.height(30.dp))
 
             // Avatar con iniciales
             Box(
                 modifier         = Modifier
-                    .size(110.dp)
+                    .size(100.dp)
                     .align(Alignment.CenterHorizontally)
-                    .background(Color(0xFF1F4A43), CircleShape),
+                    .background(Verde.copy(alpha = 0.1f), CircleShape)
+                    .padding(4.dp)
+                    .background(Verde.copy(alpha = 0.05f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -140,26 +156,36 @@ fun FormularioEntrenadorScreen(
                         .take(2)
                         .joinToString("") { it.first().uppercaseChar().toString() },
                     color      = Verde,
-                    fontSize   = 32.sp,
+                    fontSize   = 36.sp,
                     fontWeight = FontWeight.Black
                 )
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(
+                "DATOS PROFESIONALES",
+                color = TextoSec,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Black,
+                letterSpacing = 1.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
             // Error
             if (errorTexto != null) {
                 Text(
                     errorTexto!!,
-                    color    = Color(0xFFFF6B6B),
-                    fontSize = 13.sp,
+                    color    = ErrorRed,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
 
             // ── Nombre ────────────────────────────────────────────────────
             FormTextField(
-                label         = "Nombre Completo",
+                label         = "NOMBRE COMPLETO",
                 value         = nombre,
                 onValueChange = { nombre = it },
                 icon          = Icons.Default.Person
@@ -173,31 +199,33 @@ fun FormularioEntrenadorScreen(
                 onExpandedChange = { expandedEspecialidad = !expandedEspecialidad }
             ) {
                 OutlinedTextField(
-                    value         = especialidad,
+                    value         = especialidad.uppercase(),
                     onValueChange = {},
                     readOnly      = true,
-                    label         = { Text("Especialidad", color = GrisClaro) },
+                    label         = { Text("ESPECIALIDAD", fontSize = 10.sp, fontWeight = FontWeight.Black) },
                     modifier      = Modifier.menuAnchor().fillMaxWidth(),
-                    leadingIcon   = { Icon(Icons.Default.Star, null, tint = Verde) },
+                    leadingIcon   = { Icon(Icons.Default.Star, null, tint = Verde, modifier = Modifier.size(20.dp)) },
                     trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEspecialidad) },
-                    shape         = RoundedCornerShape(18.dp),
+                    shape         = RoundedCornerShape(16.dp),
                     colors        = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor   = Color(0xFF1F4A43),
-                        unfocusedContainerColor = Color(0xFF1F4A43),
+                        focusedContainerColor   = FichaFondo,
+                        unfocusedContainerColor = FichaFondo,
                         focusedBorderColor      = Verde,
                         unfocusedBorderColor    = Color.Transparent,
-                        focusedTextColor        = Blanco,
-                        unfocusedTextColor      = Blanco
+                        focusedTextColor        = Color.White,
+                        unfocusedTextColor      = Color.White,
+                        focusedLabelColor       = Verde,
+                        unfocusedLabelColor     = TextoSec
                     )
                 )
                 ExposedDropdownMenu(
                     expanded        = expandedEspecialidad,
                     onDismissRequest = { expandedEspecialidad = false },
-                    modifier        = Modifier.background(Color(0xFF1F4A43))
+                    modifier        = Modifier.background(FichaFondo)
                 ) {
                     especialidades.forEach { esp ->
                         DropdownMenuItem(
-                            text    = { Text(esp, color = Blanco) },
+                            text    = { Text(esp.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                             onClick = { especialidad = esp; expandedEspecialidad = false }
                         )
                     }
@@ -212,87 +240,67 @@ fun FormularioEntrenadorScreen(
                 onExpandedChange = { expandedEquipo = !expandedEquipo }
             ) {
                 OutlinedTextField(
-                    value         = equipoSeleccionado?.nombre ?: "Seleccionar Equipo",
+                    value         = (equipoSeleccionado?.nombre ?: "SELECCIONAR EQUIPO").uppercase(),
                     onValueChange = {},
                     readOnly      = true,
-                    label         = { Text("Equipo", color = GrisClaro) },
+                    label         = { Text("EQUIPO ASIGNADO", fontSize = 10.sp, fontWeight = FontWeight.Black) },
                     modifier      = Modifier.menuAnchor().fillMaxWidth(),
-                    leadingIcon   = { Icon(Icons.Default.Shield, null, tint = Verde) },
+                    leadingIcon   = { Icon(Icons.Default.Shield, null, tint = Verde, modifier = Modifier.size(20.dp)) },
                     trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedEquipo) },
-                    shape         = RoundedCornerShape(18.dp),
+                    shape         = RoundedCornerShape(16.dp),
                     colors        = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor   = Color(0xFF1F4A43),
-                        unfocusedContainerColor = Color(0xFF1F4A43),
+                        focusedContainerColor   = FichaFondo,
+                        unfocusedContainerColor = FichaFondo,
                         focusedBorderColor      = Verde,
                         unfocusedBorderColor    = Color.Transparent,
-                        focusedTextColor        = Blanco,
-                        unfocusedTextColor      = Blanco
+                        focusedTextColor        = Color.White,
+                        unfocusedTextColor      = Color.White,
+                        focusedLabelColor       = Verde,
+                        unfocusedLabelColor     = TextoSec
                     )
                 )
                 ExposedDropdownMenu(
                     expanded         = expandedEquipo,
                     onDismissRequest = { expandedEquipo = false },
-                    modifier         = Modifier.background(Color(0xFF1F4A43))
+                    modifier         = Modifier.background(FichaFondo)
                 ) {
                     equipos.forEach { eq ->
                         DropdownMenuItem(
-                            text    = { Text(eq.nombre, color = Blanco) },
+                            text    = { Text(eq.nombre.uppercase(), color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold) },
                             onClick = { equipoSeleccionado = eq; expandedEquipo = false }
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
             // ── Botón guardar ─────────────────────────────────────────────
             Button(
                 onClick  = { validar() },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape    = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                shape    = RoundedCornerShape(14.dp),
                 colors   = ButtonDefaults.buttonColors(containerColor = Verde)
             ) {
+                Icon(if(entrenador==null) Icons.Default.Add else Icons.Default.Save, null)
+                Spacer(Modifier.width(8.dp))
                 Text(
                     text       = if (entrenador == null) "GUARDAR ENTRENADOR" else "ACTUALIZAR ENTRENADOR",
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 16.sp,
-                    color      = Blanco
+                    fontWeight = FontWeight.Black,
+                    fontSize   = 15.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             TextButton(
                 onClick  = onBackClick,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Descartar cambios", color = GrisClaro)
+                Text("CANCELAR", color = TextoSec, fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
-}
-
-// ── Preview ───────────────────────────────────────────────────────────────
-@Preview(showBackground = true, backgroundColor = 0xFF0D2B1C, showSystemUi = true)
-@Composable
-fun FormularioEntrenadorPreview() {
-    val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val equiposFake = listOf(
-        Equipo(1L, "Millonarios FC",    "Bogotá",   formato.parse("1946-06-18")!!),
-        Equipo(2L, "Atlético Nacional", "Medellín", formato.parse("1947-03-07")!!)
-    )
-    val entrenadorFake = Entrenador(
-        idEntrenador = 1L,
-        nombre       = "Alberto Gamero",
-        especialidad = "Entrenador Principal",
-        equipo       = equiposFake[0]
-    )
-    FormularioEntrenadorScreen(
-        entrenador     = entrenadorFake,
-        equipos        = equiposFake,
-        onBackClick    = {},
-        onGuardarClick = {}
-    )
 }

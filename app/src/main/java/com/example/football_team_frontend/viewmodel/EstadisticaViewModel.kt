@@ -119,4 +119,8 @@ class EstadisticaViewModel : ViewModel() {
             }
         }
     }
+
+    fun limpiarBusqueda() {
+        _jugadoresConMasGoles.value = emptyList()
+    }
 }

@@ -1,5 +1,3 @@
-
-
 package com.example.football_team_frontend.ui.screens
 
 import android.net.Uri
@@ -22,12 +20,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.football_team_frontend.model.Equipo
 import com.example.football_team_frontend.model.Jugador
+import com.example.football_team_frontend.ui.components.FormTextField
 import com.example.football_team_frontend.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -47,46 +47,35 @@ fun FormularioJugadorScreen(
     var nacionalidad by remember { mutableStateOf(jugador?.nacionalidad ?: "") }
     var idEquipo by remember { mutableStateOf(jugador?.idEquipo) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var fechaNacimiento by remember { mutableStateOf(jugador?.fechaNac ?: "")
-    }
-    var mostrarDatePicker by remember { mutableStateOf(false)
-    }
+    var fechaNacimiento by remember { mutableStateOf(jugador?.fechaNac ?: "") }
+    var mostrarDatePicker by remember { mutableStateOf(false) }
     var errorTexto by remember { mutableStateOf<String?>(null) }
     var mostrarConfirmacion by remember { mutableStateOf(false) }
     var expandedEquipo by remember { mutableStateOf(false) }
     var expandedPosicion by remember { mutableStateOf(false) }
 
     val posiciones = listOf(
-        "Portero",
-        "Defensa Central",
-        "Lateral Derecho",
-        "Lateral Izquierdo",
-        "Mediocampista Defensivo",
-        "Mediocampista Central",
-        "Mediocampista Ofensivo",
-        "Extremo Derecho",
-        "Extremo Izquierdo",
-        "Delantero Centro",
-        "Segundo Delantero"
+        "Portero", "Defensa Central", "Lateral Derecho", "Lateral Izquierdo",
+        "Mediocampista Defensivo", "Mediocampista Central", "Mediocampista Ofensivo",
+        "Extremo Derecho", "Extremo Izquierdo", "Delantero Centro", "Segundo Delantero"
     )
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { imageUri = it }
 
     fun validar() {
         if (nombre.isBlank() || dorsal.isBlank() || posicion.isBlank() || idEquipo == null) {
-            errorTexto = "Por favor, completa todos los campos obligatorios."
+            errorTexto = "POR FAVOR, COMPLETA TODOS LOS CAMPOS OBLIGATORIOS."
             return
         }
         val dorsalInt = dorsal.toIntOrNull() ?: 0
         if (jugadoresExistentes.any { it.idEquipo == idEquipo && it.dorsal == dorsalInt && it.idJugador != jugador?.idJugador }) {
-            errorTexto = "El dorsal $dorsal ya está ocupado en este equipo."
+            errorTexto = "EL DORSAL $dorsal YA ESTÁ OCUPADO EN ESTE EQUIPO."
             return
         }
 
-        // Regla: Solo un portero por equipo
         if (posicion == "Portero" && jugadoresExistentes.any { it.idEquipo == idEquipo && it.posicion == "Portero" && it.idJugador != jugador?.idJugador }) {
-            val eqNombre = equipos.find { it.idEquipo == idEquipo }?.nombre ?: "este equipo"
-            errorTexto = "$eqNombre ya tiene un portero asignado."
+            val eqNombre = equipos.find { it.idEquipo == idEquipo }?.nombre ?: "ESTE EQUIPO"
+            errorTexto = "$eqNombre YA TIENE UN PORTERO ASIGNADO."
             return
         }
 
@@ -97,14 +86,12 @@ fun FormularioJugadorScreen(
     if (mostrarConfirmacion) {
         AlertDialog(
             onDismissRequest = { mostrarConfirmacion = false },
-            containerColor = Color(0xFF1F4A43),
-            titleContentColor = Blanco,
-            textContentColor = GrisClaro,
-            title = { Text("¿Guardar cambios?", fontWeight = FontWeight.Bold) },
-            text = { Text("Se actualizará la información de $nombre en la base de datos.") },
+            containerColor = FichaFondo,
+            shape = RoundedCornerShape(20.dp),
+            title = { Text("¿GUARDAR CAMBIOS?", color = Blanco, fontWeight = FontWeight.Black, fontSize = 16.sp) },
+            text = { Text("Se actualizará la información de $nombre en el sistema.", color = TextoSec, fontSize = 14.sp) },
             confirmButton = {
                 TextButton(onClick = {
-
                     onGuardarClick(
                         Jugador(
                             jugador?.idJugador,
@@ -116,115 +103,109 @@ fun FormularioJugadorScreen(
                             idEquipo
                         )
                     )
-
                     mostrarConfirmacion = false
-
                 }) {
-
-                    Text(
-                        "Aceptar",
-                        color = Verde
-                    )
+                    Text("ACEPTAR", color = Verde, fontWeight = FontWeight.Black)
                 }
             },
-
             dismissButton = {
-
-                TextButton(
-
-                    onClick = {
-                        mostrarDatePicker = false
-                    }
-
-                ) {
-
-                    Text(
-                        "Cancelar",
-                        color = GrisClaro
-                    )
+                TextButton(onClick = { mostrarConfirmacion = false }) {
+                    Text("CANCELAR", color = TextoSec)
                 }
             }
         )
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(VerdeOscuro)) {
+    Scaffold(
+        containerColor = SuperficieAlt,
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(FondoOscuro)
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(40.dp).background(Color.White.copy(alpha = 0.12f), CircleShape)
+                ) {
+                    Icon(Icons.Default.ArrowBackIosNew, null, tint = Blanco, modifier = Modifier.size(18.dp))
+                }
+                Text(
+                    text = if (jugador == null) "NUEVO JUGADOR" else "EDITAR PERFIL",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Blanco,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(padding)
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Cabecera
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier.background(Color(0xFF1F4A43), CircleShape).size(36.dp)
-                ) {
-                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = null, tint = Blanco, modifier = Modifier.size(16.dp))
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = if (jugador == null) "Nuevo Jugador" else "Editar Perfil",
-                    color = Blanco, fontSize = 22.sp, fontWeight = FontWeight.Bold
-                )
-            }
-
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Foto de Perfil
+            // Foto de Perfil / Avatar
             Box(
                 modifier = Modifier
                     .size(110.dp)
                     .align(Alignment.CenterHorizontally)
                     .clip(CircleShape)
-                    .background(Color(0xFF1F4A43))
+                    .background(FichaFondo)
                     .clickable { launcher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
                 if (imageUri != null) {
                     AsyncImage(model = imageUri, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                 } else {
-                    Icon(Icons.Default.AddAPhoto, contentDescription = null, tint = Verde, modifier = Modifier.size(30.dp))
+                    Icon(Icons.Default.AddAPhoto, null, tint = Verde, modifier = Modifier.size(36.dp))
                 }
             }
 
             Spacer(modifier = Modifier.height(30.dp))
 
             if (errorTexto != null) {
-                Text(errorTexto!!, color = Color(0xFFFF6B6B), fontSize = 13.sp, modifier = Modifier.padding(bottom = 16.dp))
+                Text(errorTexto!!, color = ErrorRed, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 16.dp))
             }
 
-            // Campos (Distribución Original)
-            FormTextField("Nombre Completo", nombre, { nombre = it }, Icons.Default.Person)
+            FormTextField("NOMBRE COMPLETO", nombre, { newVal: String -> nombre = newVal }, Icons.Default.Person)
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                FormTextField("Dorsal", dorsal, { if (it.length <= 3) dorsal = it }, Icons.Default.Numbers, Modifier.weight(1f))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                FormTextField("DORSAL", dorsal, { newVal: String -> if (newVal.all { c: Char -> c.isDigit() } && newVal.length <= 3) dorsal = newVal }, Icons.Default.Numbers, Modifier.weight(1f))
 
-                // Selector Posición
                 Box(modifier = Modifier.weight(1.5f)) {
                     ExposedDropdownMenuBox(expanded = expandedPosicion, onExpandedChange = { expandedPosicion = !expandedPosicion }) {
                         OutlinedTextField(
-                            value = posicion, onValueChange = {}, readOnly = true,
-                            label = { Text("Posición", color = GrisClaro) },
+                            value = posicion.uppercase(), onValueChange = {}, readOnly = true,
+                            label = { Text("POSICIÓN", color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Black) },
                             modifier = Modifier.menuAnchor().fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = RoundedCornerShape(16.dp),
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPosicion) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = Color(0xFF1F4A43),
-                                unfocusedContainerColor = Color(0xFF1F4A43),
+                                focusedContainerColor = FichaFondo,
+                                unfocusedContainerColor = FichaFondo,
                                 focusedBorderColor = Verde,
                                 unfocusedBorderColor = Color.Transparent,
                                 focusedTextColor = Blanco,
-                                unfocusedTextColor = Blanco
+                                unfocusedTextColor = Blanco,
+                                focusedLabelColor = Verde,
+                                unfocusedLabelColor = TextoSec
                             )
                         )
-                        ExposedDropdownMenu(expanded = expandedPosicion, onDismissRequest = { expandedPosicion = false }, modifier = Modifier.background(Color(0xFF1F4A43))) {
+                        ExposedDropdownMenu(expanded = expandedPosicion, onDismissRequest = { expandedPosicion = false }, modifier = Modifier.background(FichaFondo)) {
                             posiciones.forEach { pos ->
-                                DropdownMenuItem(text = { Text(pos, color = Blanco) }, onClick = { posicion = pos; expandedPosicion = false })
+                                DropdownMenuItem(text = { Text(pos.uppercase(), color = Blanco, fontSize = 12.sp, fontWeight = FontWeight.Bold) }, onClick = { posicion = pos; expandedPosicion = false })
                             }
                         }
                     }
@@ -233,151 +214,75 @@ fun FormularioJugadorScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            FormTextField("Nacionalidad", nacionalidad, { nacionalidad = it }, Icons.Default.Public)
+            FormTextField("NACIONALIDAD", nacionalidad, { newVal: String -> nacionalidad = newVal }, Icons.Default.Public)
+
 
             Spacer(modifier = Modifier.height(16.dp))
-            // ── CAMPO FECHA DE NACIMIENTO  ─────────────────────────────
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        mostrarDatePicker = true
-                    }
-            ) {
-
+            Box(modifier = Modifier.fillMaxWidth().clickable { mostrarDatePicker = true }) {
                 OutlinedTextField(
                     value = fechaNacimiento,
                     onValueChange = {},
                     readOnly = true,
                     enabled = false,
-
-                    label = {
-                        Text(
-                            "Fecha de Nacimiento",
-                            color = GrisClaro
-                        )
-                    },
-
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.CalendarToday,
-                            contentDescription = null,
-                            tint = Verde
-                        )
-                    },
-
+                    label = { Text("FECHA DE NACIMIENTO", color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Black) },
+                    leadingIcon = { Icon(Icons.Default.CalendarToday, null, tint = Verde, modifier = Modifier.size(20.dp)) },
                     modifier = Modifier.fillMaxWidth(),
-
-                    shape = RoundedCornerShape(18.dp),
-
+                    shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-
-                        disabledContainerColor = Color(0xFF1F4A43),
+                        disabledContainerColor = FichaFondo,
                         disabledBorderColor = Color.Transparent,
                         disabledTextColor = Blanco,
-                        disabledLabelColor = GrisClaro,
-
-                        focusedContainerColor = Color(0xFF1F4A43),
-                        unfocusedContainerColor = Color(0xFF1F4A43),
-
+                        disabledLabelColor = TextoSec,
+                        focusedContainerColor = FichaFondo,
+                        unfocusedContainerColor = FichaFondo,
                         focusedBorderColor = Verde,
                         unfocusedBorderColor = Color.Transparent
                     )
                 )
             }
 
-// ── DATE PICKER ─────────────────────────────────────────────────────
-
             if (mostrarDatePicker) {
-
                 val datePickerState = rememberDatePickerState()
-
                 DatePickerDialog(
-
-                    onDismissRequest = {
-                        mostrarDatePicker = false
-                    },
-
+                    onDismissRequest = { mostrarDatePicker = false },
                     confirmButton = {
-
-                        TextButton(
-
-                            onClick = {
-
-                                datePickerState.selectedDateMillis?.let { millis ->
-
-                                    val formatter = SimpleDateFormat(
-                                        "yyyy-MM-dd",
-                                        Locale.getDefault()
-                                    )
-
-                                    fechaNacimiento = formatter.format(
-                                        java.util.Date(millis)
-                                    )
-                                }
-
-                                mostrarDatePicker = false
+                        TextButton(onClick = {
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                fechaNacimiento = formatter.format(java.util.Date(millis))
                             }
-
-                        ) {
-
-                            Text(
-                                "Aceptar",
-                                color = Verde
-                            )
-                        }
+                            mostrarDatePicker = false
+                        }) { Text("ACEPTAR", color = Verde, fontWeight = FontWeight.Black) }
                     },
-
                     dismissButton = {
-
-                        TextButton(
-
-                            onClick = {
-                                mostrarDatePicker = false
-                            }
-
-                        ) {
-
-                            Text(
-                                "Cancelar",
-                                color = GrisClaro
-                            )
-                        }
+                        TextButton(onClick = { mostrarDatePicker = false }) { Text("CANCELAR", color = TextoSec) }
                     }
-
-                ) {
-
-                    DatePicker(
-                        state = datePickerState
-                    )
-                }
+                ) { DatePicker(state = datePickerState) }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Selector Equipo
             ExposedDropdownMenuBox(expanded = expandedEquipo, onExpandedChange = { expandedEquipo = !expandedEquipo }) {
                 OutlinedTextField(
-                    value = equipos.find { it.idEquipo == idEquipo }?.nombre ?: "Seleccionar Equipo",
+                    value = (equipos.find { it.idEquipo == idEquipo }?.nombre ?: "SELECCIONAR EQUIPO").uppercase(),
                     onValueChange = {}, readOnly = true,
-                    label = { Text("Equipo", color = GrisClaro) },
+                    label = { Text("EQUIPO", color = TextoSec, fontSize = 10.sp, fontWeight = FontWeight.Black) },
                     modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    leadingIcon = { Icon(Icons.Default.Shield, contentDescription = null, tint = Verde) },
-                    shape = RoundedCornerShape(18.dp),
+                    leadingIcon = { Icon(Icons.Default.Shield, null, tint = Verde, modifier = Modifier.size(20.dp)) },
+                    shape = RoundedCornerShape(16.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF1F4A43),
-                        unfocusedContainerColor = Color(0xFF1F4A43),
+                        focusedContainerColor = FichaFondo,
+                        unfocusedContainerColor = FichaFondo,
                         focusedBorderColor = Verde,
                         unfocusedBorderColor = Color.Transparent,
                         focusedTextColor = Blanco,
                         unfocusedTextColor = Blanco
                     )
                 )
-                ExposedDropdownMenu(expanded = expandedEquipo, onDismissRequest = { expandedEquipo = false }, modifier = Modifier.background(Color(0xFF1F4A43))) {
+                ExposedDropdownMenu(expanded = expandedEquipo, onDismissRequest = { expandedEquipo = false }, modifier = Modifier.background(FichaFondo)) {
                     equipos.forEach { eq ->
-                        DropdownMenuItem(text = { Text(eq.nombre, color = Blanco) }, onClick = { idEquipo = eq.idEquipo; expandedEquipo = false })
+                        DropdownMenuItem(text = { Text(eq.nombre.uppercase(), color = Blanco, fontSize = 12.sp, fontWeight = FontWeight.Bold) }, onClick = { idEquipo = eq.idEquipo; expandedEquipo = false })
                     }
                 }
             }
@@ -387,10 +292,10 @@ fun FormularioJugadorScreen(
             Button(
                 onClick = { validar() },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Verde)
             ) {
-                Text("GUARDAR JUGADOR", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Blanco)
+                Text("GUARDAR JUGADOR", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Blanco, letterSpacing = 1.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -399,7 +304,7 @@ fun FormularioJugadorScreen(
                 onClick = onBackClick,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text("Descartar cambios", color = GrisClaro)
+                Text("DESCARTAR CAMBIOS", color = TextoSec, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
@@ -407,51 +312,3 @@ fun FormularioJugadorScreen(
     }
 }
 
-@Composable
-fun FormTextField(label: String, value: String, onValueChange: (String) -> Unit, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier = Modifier) {
-    OutlinedTextField(
-        value = value, onValueChange = onValueChange,
-        label = { Text(label, color = GrisClaro) },
-        modifier = modifier.fillMaxWidth(),
-        leadingIcon = { Icon(icon, contentDescription = null, tint = Verde) },
-        shape = RoundedCornerShape(18.dp),
-        singleLine = true,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFF1F4A43),
-            unfocusedContainerColor = Color(0xFF1F4A43),
-            focusedBorderColor = Verde,
-            unfocusedBorderColor = Color.Transparent,
-            focusedTextColor = Blanco,
-            unfocusedTextColor = Blanco,
-            cursorColor = Verde
-        )
-    )
-}
-
-// ── Preview ───────────────────────────────────────────────────────────────
-@Preview(showBackground = true, backgroundColor = 0xFF0D2B1C, showSystemUi = true)
-@Composable
-fun FormularioJugadorPreview() {
-    val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val jugadorFake = Jugador(
-        idJugador   = 5L,
-        nombre      = "Daniel Ruiz",
-        posicion    = "Extremo Izquierdo",
-        dorsal      = 18,
-        fechaNac    = "2001-07-30",
-        nacionalidad = "Colombiano",
-        idEquipo    = 1L
-    )
-    val equipoFake = Equipo(
-        idEquipo = 1L,
-        nombre   = "Millonarios FC",
-        ciudad   = "Bogotá", formato.parse("2002-02-02")!!
-    )
-    DetalleJugadorScreen(
-        jugador         = jugadorFake,
-        equipo          = equipoFake,
-        onBackClick     = {},
-        onEditarClick   = {},
-        onEliminarClick = {}
-    )
-}

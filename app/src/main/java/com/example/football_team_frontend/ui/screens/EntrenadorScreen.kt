@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,20 +29,20 @@ import java.util.*
 
 // ── Paleta ──────────────────────────────────────────────────────────────────
 private val Superficie    = Color(0xFF1A3D2C)
-private val SuperficieAlt = Color(0xFF153224)
+private val SuperficieAlt = FondoOscuro
 private val FichaFondo    = Color(0xFF1F4A34)
 private val BorderSutil   = Color(0xFF2D6645)
 private val TextoSec      = Color(0xFF7FB99A)
 
 // Color por especialidad
 private fun colorEspecialidad(especialidad: String): Color = when {
-    especialidad.contains("Portero",    ignoreCase = true) -> Color(0xFFFFA726)
-    especialidad.contains("Defensivo",  ignoreCase = true) -> Color(0xFF42A5F5)
-    especialidad.contains("Ofensivo",   ignoreCase = true) -> Color(0xFFEF5350)
-    especialidad.contains("Físico",     ignoreCase = true) ||
-            especialidad.contains("Fisico",     ignoreCase = true) -> Color(0xFF26C6DA)
-    especialidad.contains("Táctico",    ignoreCase = true) ||
-            especialidad.contains("Tactico",    ignoreCase = true) -> Color(0xFFAB47BC)
+    especialidad.contains("Portero",    ignoreCase = true) -> WarningYellow
+    especialidad.contains("Asistente",  ignoreCase = true) ||
+            especialidad.contains("Analista",   ignoreCase = true) ||
+            especialidad.contains("Físico",     ignoreCase = true) ||
+            especialidad.contains("Fisico",     ignoreCase = true) ||
+            especialidad.contains("Defensivo",  ignoreCase = true) -> InfoBlue
+    especialidad.contains("Ofensivo",   ignoreCase = true) -> ErrorRed
     else                                                    -> Verde
 }
 
@@ -70,14 +71,63 @@ fun EntrenadoresScreen(
     Scaffold(
         containerColor = SuperficieAlt,
         snackbarHost   = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF0D2B1C))
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(
+                    onClick  = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Atrás",
+                        tint               = Color.White,
+                        modifier           = Modifier.size(18.dp)
+                    )
+                }
+                
+                Text(
+                    text = "ENTRENADORES",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
+
+                IconButton(
+                    onClick  = onRefrescarClick,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(40.dp)
+                        .background(Color.White.copy(alpha = 0.12f), CircleShape)
+                ) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = "Refrescar",
+                        tint               = Verde,
+                        modifier           = Modifier.size(20.dp)
+                    )
+                }
+            }
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick        = onAgregarClick,
                 containerColor = Verde,
                 contentColor   = Color.White,
-                shape          = RoundedCornerShape(50.dp),
+                shape          = RoundedCornerShape(16.dp),
                 icon           = { Icon(Icons.Default.Add, null, modifier = Modifier.size(20.dp)) },
-                text           = { Text("Nuevo entrenador", fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+                text           = { Text("AGREGAR", fontWeight = FontWeight.Black, fontSize = 14.sp) }
             )
         }
     ) { padding ->
@@ -88,104 +138,18 @@ fun EntrenadoresScreen(
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
 
-            // ── HERO ─────────────────────────────────────────────────────
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color(0xFF0D2B1C), Color(0xFF163222))
-                            )
-                        )
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 20.dp)
-                ) {
-                    Column {
-                        Row(
-                            modifier          = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick  = onBackClick,
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .background(Color.White.copy(alpha = 0.12f), CircleShape)
-                            ) {
-                                Icon(
-                                    Icons.Default.ArrowBackIosNew,
-                                    contentDescription = "Atrás",
-                                    tint               = Color.White,
-                                    modifier           = Modifier.size(20.dp)
-                                )
-                            }
-
-                            Spacer(Modifier.weight(1f))
-
-                            IconButton(
-                                onClick  = onRefrescarClick,
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .background(Verde.copy(alpha = 0.25f), CircleShape)
-                            ) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = "Refrescar",
-                                    tint               = Verde,
-                                    modifier           = Modifier.size(22.dp)
-                                )
-                            }
-                        }
-
-                        Spacer(Modifier.height(20.dp))
-
-                        Row(
-                            modifier              = Modifier.fillMaxWidth(),
-                            verticalAlignment     = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text       = "Entrenadores",
-                                modifier   = Modifier.weight(1f),
-                                color      = Color.White,
-                                fontSize   = 30.sp,
-                                fontWeight = FontWeight.Black,
-                                lineHeight = 32.sp
-                            )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Box(
-                                modifier = Modifier
-                                    .background(Verde.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-                                    .padding(horizontal = 14.dp, vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text       = "${entrenadores.size}",
-                                    color      = Verde,
-                                    fontSize   = 22.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
             // ── Buscador ──────────────────────────────────────────────────
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF163222))
-                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                        .padding(horizontal = 24.dp, vertical = 20.dp)
                 ) {
                     OutlinedTextField(
                         value         = searchQuery,
                         onValueChange = onSearchChange,
                         modifier      = Modifier.fillMaxWidth(),
-                        placeholder   = { Text("Buscar por nombre o especialidad...", color = TextoSec, fontSize = 14.sp) },
+                        placeholder   = { Text("Buscar por nombre o especialidad...", color = TextoSec.copy(0.6f), fontSize = 14.sp) },
                         leadingIcon   = {
                             Icon(Icons.Default.Search, null, tint = Verde, modifier = Modifier.size(20.dp))
                         },
@@ -199,8 +163,8 @@ fun EntrenadoresScreen(
                         singleLine    = true,
                         shape         = RoundedCornerShape(16.dp),
                         colors        = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor   = Superficie,
-                            unfocusedContainerColor = Superficie,
+                            focusedContainerColor   = FichaFondo.copy(0.5f),
+                            unfocusedContainerColor = FichaFondo.copy(0.5f),
                             focusedBorderColor      = Verde,
                             unfocusedBorderColor    = BorderSutil,
                             focusedTextColor        = Color.White,
@@ -216,15 +180,15 @@ fun EntrenadoresScreen(
                 Row(
                     modifier          = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                        .padding(horizontal = 24.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text          = "Cuerpo técnico  •  ${entrenadores.size} entrenadores",
+                        text          = "CUERPO TÉCNICO  •  ${entrenadores.size} INTEGRANTES",
                         color         = TextoSec,
                         fontSize      = 12.sp,
-                        fontWeight    = FontWeight.Bold,
-                        letterSpacing = 0.5.sp,
+                        fontWeight    = FontWeight.Black,
+                        letterSpacing = 1.sp,
                         modifier      = Modifier.weight(1f)
                     )
                 }
@@ -299,7 +263,7 @@ fun EntrenadorCard(entrenador: Entrenador, onClick: () -> Unit) {
     Card(
         modifier  = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 5.dp)
+            .padding(horizontal = 20.dp, vertical = 6.dp)
             .clickable { onClick() },
         shape     = RoundedCornerShape(18.dp),
         colors    = CardDefaults.cardColors(containerColor = FichaFondo),
@@ -308,7 +272,7 @@ fun EntrenadorCard(entrenador: Entrenador, onClick: () -> Unit) {
         Row(
             modifier          = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Avatar
@@ -321,46 +285,48 @@ fun EntrenadorCard(entrenador: Entrenador, onClick: () -> Unit) {
                 Text(
                     text       = iniciales,
                     color      = color,
-                    fontSize   = 15.sp,
+                    fontSize   = 16.sp,
                     fontWeight = FontWeight.Black
                 )
             }
 
-            Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(16.dp))
 
             // Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text       = entrenador.nombre,
+                    text       = entrenador.nombre.uppercase(),
                     color      = Color.White,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     fontSize   = 15.sp,
                     maxLines   = 1,
                     overflow   = TextOverflow.Ellipsis
                 )
-                Spacer(Modifier.height(3.dp))
-                Box(
-                    modifier = Modifier
-                        .background(color.copy(alpha = 0.18f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 7.dp, vertical = 2.dp)
-                ) {
+                Spacer(Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .background(color.copy(alpha = 0.18f), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text       = entrenador.especialidad.uppercase(),
+                            color      = color,
+                            fontSize   = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            maxLines   = 1
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text       = entrenador.especialidad,
-                        color      = color,
+                        text       = entrenador.equipo.nombre.uppercase(),
+                        color      = Verde,
                         fontSize   = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines   = 1
+                        fontWeight = FontWeight.Black,
+                        maxLines   = 1,
+                        overflow   = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(Modifier.height(3.dp))
-                Text(
-                    text       = entrenador.equipo.nombre,
-                    color      = Verde,
-                    fontSize   = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines   = 1,
-                    overflow   = TextOverflow.Ellipsis
-                )
             }
 
             Spacer(Modifier.width(10.dp))
@@ -369,10 +335,8 @@ fun EntrenadorCard(entrenador: Entrenador, onClick: () -> Unit) {
                 Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint               = TextoSec,
-                modifier           = Modifier.size(18.dp)
+                modifier           = Modifier.size(20.dp)
             )
-
-
         }
     }
 }

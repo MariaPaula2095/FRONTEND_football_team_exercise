@@ -35,15 +35,15 @@ private val FichaFondo   = Color(0xFF1F4A34)
 private val BorderSutil  = Color(0xFF2D6645)
 private val TextoSec     = Color(0xFF7FB99A)
 
-// Colores por posición
+// Colores por posición (Sincronizado con DetalleJugadorScreen)
 private fun colorPosicion(posicion: String): Color = when {
     posicion.contains("Portero",      ignoreCase = true) -> WarningYellow
     posicion.contains("Defensa",      ignoreCase = true) ||
             posicion.contains("Lateral",      ignoreCase = true) -> InfoBlue
     posicion.contains("Mediocampista",ignoreCase = true) ||
-            posicion.contains("Medio",        ignoreCase = true) -> Color(0xFF9F25B4)
-    posicion.contains("Extremo",      ignoreCase = true) -> Color(0xFF26C6DA)
-    posicion.contains("Delantero",    ignoreCase = true) -> ErrorRed
+            posicion.contains("Medio",        ignoreCase = true) -> Verde
+    posicion.contains("Delantero",    ignoreCase = true) ||
+            posicion.contains("Extremo",      ignoreCase = true) -> ErrorRed
     else                                                  -> Verde
 }
 

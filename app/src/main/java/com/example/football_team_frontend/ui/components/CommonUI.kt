@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.football_team_frontend.ui.theme.*
@@ -126,3 +129,61 @@ fun MetricBoxRow(
         }
     }
 }
+
+// ── Preview de los componentes que se usara como plantilla en jugadores,entrena,equipos.. ──────────────────────────────────────────────
+@Preview(showBackground = true, backgroundColor = 0xFF0D2B1C)
+@Composable
+fun CommonUIPreview() {
+    Column(
+        modifier = Modifier
+            .background(SuperficieAlt)
+            .padding(20.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("Componentes Reutilizables", color = Blanco, fontWeight = FontWeight.Black, fontSize = 20.sp)
+
+        // FormTextField: Usado en formularios de creación/edición
+        FormTextField(
+            label = "NOMBRE DEL JUGADOR",
+            value = "Lionel Messi",
+            onValueChange = {},
+            icon = Icons.Default.Person
+        )
+
+        // MetricBox: Usado para datos cortos en grilla (Dorsal, Nacionalidad)
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            MetricBox(
+                modifier = Modifier.weight(1f),
+                label = "DORSAL",
+                value = "#10",
+                icon = Icons.Default.Numbers,
+                color = Verde
+            )
+            MetricBox(
+                modifier = Modifier.weight(1f),
+                label = "POSICIÓN",
+                value = "DELANTERO",
+                icon = Icons.Default.SportsSoccer,
+                color = ErrorRed
+            )
+        }
+
+        // MetricBoxRow: Usado para datos largos (Fechas, Clubes)
+        MetricBoxRow(
+            label = "FECHA DE NACIMIENTO",
+            value = "1987-06-24",
+            icon = Icons.Default.CalendarToday,
+            color = WarningYellow
+        )
+        
+        MetricBoxRow(
+            label = "CLUB ACTUAL",
+            value = "Inter Miami CF",
+            icon = Icons.Default.Shield,
+            color = InfoBlue
+        )
+    }
+}
+
+
